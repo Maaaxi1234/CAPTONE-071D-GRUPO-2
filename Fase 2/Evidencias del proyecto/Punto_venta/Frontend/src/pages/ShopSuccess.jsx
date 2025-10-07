@@ -12,36 +12,50 @@ export default function ShopSuccess() {
   useEffect(() => {
     if (!cart.length) navigate("/shop", { replace: true });
   }, [cart, navigate]);
-
-  const [method, setMethod] = useState("efectivo"); // efectivo | tarjeta | transferencia
+  const [method, setMethod] = useState("efectivo");   // ✅ FALTABA
+  const mapMethod = {
+    efectivo: "efectivo",
+    tarjeta: "debito",          // si hoy tienes solo “tarjeta”, mándalo como débito
+    transferencia: "transferencia",
+    debito: "debito",
+    credito: "credito",
+  };
   const [cash, setCash] = useState(""); // monto recibido en efectivo
 
   const cashNum = Number(cash || 0);
   const change = Math.max(0, cashNum - total);
 
   function submit() {
-    // Construir payload para backend
-    const payload = {
-      items: cart.map(l => ({
-        product_id: l.id,
-        qty: l.qty,
-        price: l.price,
-      })),
-      note: `Pago: ${method}${method === "efectivo" ? ` / Recibido ${cashNum} / Vuelto ${change}` : ""}`,
-    };
+  const payload = {
+    customer: {
+      full_name: "Cliente Demo",  // en el futuro puedes usar datos reales
+      email: "",
+      phone: "99999999",
+    },
+    delivery: {
+      mode: "retiro",             // o "envio"
+      address: "",                // requerido si envio
+      notes: "",
+    },
+    payment_method: mapMethod[method] || "efectivo",
 
-    api.post("/api/orders/", payload)
-      .then(() => {
-        // limpiar carrito temporal
-        sessionStorage.removeItem("pos_cart");
-        sessionStorage.removeItem("pos_totals");
-        navigate("/shop", { replace: true });
-      })
-      .catch(err => {
-        alert(err?.response?.data?.detail || "Error al registrar la venta");
-        console.error(err);
-      });
-  }
+    items: cart.map(l => ({
+      product_id: l.id,   // OBLIGATORIO este nombre
+      quantity: l.qty     // OBLIGATORIO este nombre
+    }))
+  };
+
+  api.post("/api/orders/", payload)
+    .then(() => {
+      sessionStorage.clear();
+      navigate("/shop", { replace: true });
+    })
+    .catch(err => {
+      console.error("Error al registrar la venta:", err?.response?.data || err);
+      alert(JSON.stringify(err?.response?.data));
+    });
+}
+
 
   return (
     <div className="pay-screen">

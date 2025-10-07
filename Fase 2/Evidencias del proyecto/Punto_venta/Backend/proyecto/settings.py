@@ -3,6 +3,7 @@ import os
 from datetime import timedelta
 from pathlib import Path
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
 
@@ -108,3 +109,7 @@ CORS_ALLOW_CREDENTIALS = False
 
 if DEBUG and not CORS_ALLOWED_ORIGINS:
     CORS_ALLOW_ALL_ORIGINS = True
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

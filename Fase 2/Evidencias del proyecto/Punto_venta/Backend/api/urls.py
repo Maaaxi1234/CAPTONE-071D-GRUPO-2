@@ -8,7 +8,6 @@ from .views import (
 
 urlpatterns = [
     path("me/", MeView.as_view()),
-
     # Categorías (IDs enteros)
     path("categories/", CategoryListCreateView.as_view()),
     path("categories/<int:pk>/", CategoryDetailView.as_view()),

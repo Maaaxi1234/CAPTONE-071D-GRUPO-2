@@ -23,7 +23,7 @@ if hasattr(Product, "barcode"):
     _product_fields.insert(_product_fields.index("image") + 1, "barcode")
 
 class ProductSerializer(serializers.ModelSerializer):
-    # Permitimos escribir 'id' (opcional) y lo autogeneramos si no viene
+    # permitir escribir id opcional
     id = serializers.CharField(required=False)
 
     category = CategorySerializer(read_only=True)
@@ -35,9 +35,21 @@ class ProductSerializer(serializers.ModelSerializer):
         allow_null=False,
     )
 
+    # escribe el archivo; al leer transformamos a URL absoluta abajo
+    image = serializers.ImageField(required=False, allow_null=True)
+
     class Meta:
         model = Product
-        fields = _product_fields
+        fields = _product_fields  # debe incluir "image"
+        
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        img = data.get("image")
+        if img:
+            request = self.context.get("request")
+            if request and not img.startswith("http"):
+                data["image"] = request.build_absolute_uri(img)
+        return data
 
     # Validaciones
     def validate_sku(self, v):
@@ -60,7 +72,6 @@ class ProductSerializer(serializers.ModelSerializer):
         return v
 
     def create(self, validated_data):
-        # Si no viene id, lo generamos
         if not validated_data.get("id"):
             validated_data["id"] = generate_product_id()
         return super().create(validated_data)
@@ -111,6 +122,7 @@ class OrderCreateSerializer(serializers.Serializer):
                 address=delivery.get("address"),
                 notes=delivery.get("notes") or "",
                 payment_method=pm,
+                status="paid",
             )
             total = 0
 
@@ -129,7 +141,9 @@ class OrderCreateSerializer(serializers.Serializer):
 
                 OrderItem.objects.create(
                     order=order,
-                    product=product,
+                    product=product,                # FK (puede borrarse luego)
+                    product_name=product.name,      # snapshot
+                    product_sku=product.sku,        # snapshot
                     quantity=qty,
                     price=product.price,
                 )
@@ -146,16 +160,22 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
-            "id", "code", "created_at", "full_name", "phone",
-            "delivery_mode", "address", "payment_method", "total", "items"
+            "id","code","created_at","status",
+            "full_name","phone","delivery_mode","address",
+            "payment_method","total","items"
         ]
 
     def get_items(self, obj):
-        return [{
-            "product": i.product.name,
-            "sku": i.product.sku,
-            "quantity": i.quantity,
-            "price": i.price,
-            "line_total": i.quantity * i.price
-        } for i in obj.items.all()]
-
+        out = []
+        for i in obj.items.all():
+            # si product fue borrado, usa snapshot
+            pname = i.product.name if i.product else (i.product_name or "")
+            psku  = i.product.sku  if i.product else (i.product_sku or "")
+            out.append({
+                "product": pname,
+                "sku": psku,
+                "quantity": i.quantity,
+                "price": i.price,
+                "line_total": i.quantity * i.price
+            })
+        return out

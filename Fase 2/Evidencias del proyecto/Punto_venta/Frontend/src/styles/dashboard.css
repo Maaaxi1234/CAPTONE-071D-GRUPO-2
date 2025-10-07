@@ -1,151 +1,276 @@
-/* ====== Fondo global ====== */
+/* ===== Plantitas — Paleta Final ===== */
 .page-plantitas {
-  background: #000; /* fondo negro */
-  color: #fff;
+  --bg: #F5F7F2;       /* fondo principal */
+  --panel: #FFFFFF;    /* tarjetas */
+  --panel-2: #F9FAFB;  /* headers suaves */
+  --border: #E5E7EB;   /* bordes */
+  --text: #212121;     /* texto principal (gris casi negro) */
+  --text-sec: #555555; /* texto secundario / labels */
+
+  --primary: #2E7D32;       /* Verde hoja intenso */
+  --primary-light: #66BB6A; /* Verde claro (hover, fluidez) */
+  --warn: #FFC107;          /* Amarillo mostaza (avisos) */
+  --error: #E53935;         /* Rojo tomate (alertas/stock bajo) */
+
+  background: var(--bg);
+  color: var(--text);
   min-height: 100vh;
   padding: 16px;
+  font-family: system-ui,"Segoe UI",Roboto,Arial,sans-serif;
 }
 
-/* ====== Layout principal ====== */
-.main-grid {
+/* ===== Header ===== */
+.page-plantitas .dash-header {
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 16px;
+  background: var(--primary);
+  border-radius: 12px;
+}
+.page-plantitas .brand {display:flex;align-items:center;gap:12px}
+.page-plantitas .brand-logo {
+  width:40px;height:40px;border-radius:12px;background:#fff;
+}
+.page-plantitas .brand-title {margin:0;font-size:22px;color:#fff}
+.page-plantitas .brand-sub {font-size:13px;color:#fff;opacity:.9}
+.page-plantitas .btn {all:unset;cursor:pointer}
+.page-plantitas .btn.ghost {
+  border:1px solid #fff;
+  border-radius:10px;
+  padding:8px 12px;
+  background:transparent;
+  color:#fff;
+  transition:.18s ease;
+}
+.page-plantitas .btn.ghost:hover {background:var(--primary-light);color:#fff}
+/* ===== Cards ===== */
+.page-plantitas .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 0; /* deja espacio completo al gráfico */
+  box-shadow: 0 4px 12px rgba(0,0,0,.04);
+  overflow: visible; /* permite que el gráfico no se corte */
+}
+/* Botones normales */
+.tile {
+  border: none;
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  background: #f5f5f5;
+}
+
+.tile:hover {
+  background: #e8f5e9;
+}
+
+/* Botón activo según permisos */
+.tile-active {
+  background: #c8e6c9;
+  border: 2px solid #2e7d32;
+  color: #1b5e20;
+}
+
+.tile-active:hover {
+  background: #a5d6a7;
+}
+
+/* Botón deshabilitado */
+.tile-disabled {
+  background: #eeeeee;
+  color: #999;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.page-plantitas .card-head {
+  padding:10px 12px;
+  background:var(--primary);
+  border-radius:10px;
+}
+.page-plantitas .card-head h3 {
+  margin:0;font-size:16px;color:#fff;
+}
+.page-plantitas .card-body {padding:10px 12px}
+.page-plantitas .card:hover {border-color: var(--primary-light)}
+/* Layouts */
+.page-plantitas .grid.kpis {
   display: grid;
-  grid-template-columns: 1fr minmax(320px, 520px) 1fr; /* gráfico — HUB — gráfico */
+  gap: 12px;
+  margin-top: 12px;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+}
+@media (max-width:1024px){
+  .page-plantitas .grid.kpis { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width:560px){
+  .page-plantitas .grid.kpis { grid-template-columns: 1fr; }
+}
+.page-plantitas .main-grid {
+  display: grid;
   gap: 16px;
   align-items: stretch;
   margin-top: 16px;
+  grid-template-columns: 1fr minmax(200px, 240px) 1fr;
 }
-@media (max-width: 1024px) {
-  .main-grid { grid-template-columns: 1fr; }
+@media (max-width:1024px){
+  .page-plantitas .main-grid { grid-template-columns: 1fr; }
 }
-
-/* ====== HUB central (botones grandes azules) ====== */
-.hub {
+.page-plantitas .grid.two {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width:1024px){
+  .page-plantitas .grid.two { grid-template-columns: 1fr; }
+}
+/* ===== KPIs ===== */
+.page-plantitas .kpi {
+  padding:16px;
+  border-top:5px solid var(--primary);
+  background:#fff;
+}
+.page-plantitas .kpi-title {font-size:13px;color:var(--text-sec)}
+.page-plantitas .kpi-value {font-size:26px;font-weight:800;margin:4px 0 2px;color:var(--text)}
+.page-plantitas .kpi-hint {font-size:12px;color:var(--text-sec)}
+.page-plantitas .kpi.warn {border-top-color:var(--error)} /* alerta en rojo */
+/* ==== HUB (botones) ==== */
+.page-plantitas .hub {
   display: grid;
   place-items: center;
-  gap: 16px;
-  padding: 12px;
-}
-.tile {
+  gap: 12px;
+  padding: 8px 0;
   width: 100%;
-  max-width: 480px;
-  min-height: 160px;
-  border-radius: 20px;
-  border: none;
-  background: linear-gradient(180deg, #3b82f6, #1e40af); /* azul */
+}
+
+/* Botones del hub */
+.page-plantitas .tile {
+  width: 100%;
+  max-width: 200px;          /* 🔹 más angosto */
+  min-height: 110px;         /* 🔹 altura más compacta */
+  border-radius: 16px;
+  border: 2px solid var(--primary);
+  background: var(--primary);
   color: #fff;
-  box-shadow: 0 6px 24px rgba(0,0,0,0.6);
   display: grid;
-  grid-template-rows: auto auto auto;
   justify-items: center;
   align-content: center;
-  gap: 6px;
-  padding: 20px 16px;
+  gap: 4px;
+  padding: 14px 12px;
   cursor: pointer;
-  transition: transform .08s ease, opacity .2s ease;
+  transition: transform .08s ease, filter .2s ease;
 }
-.tile:hover { transform: translateY(-2px); opacity: 0.9; }
-.tile-emoji { font-size: 42px; line-height: 1; }
-.tile-title { font-weight: 700; font-size: 20px; }
-.tile-sub { font-size: 13px; opacity: .9; }
+.page-plantitas .tile:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
 
-/* ====== Gráfico (barras blancas) ====== */
-.bars {
-  height: 220px;
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 10px;
-  align-items: end;
+.page-plantitas .tile-emoji {
+  font-size: 36px;            /* 🔹 más pequeño */
+  line-height: 1;
 }
-.bar {
+.page-plantitas .tile-title {
+  font-weight: 800;
+  font-size: 18px;
+}
+.page-plantitas .tile-sub {
+  font-size: 12px;
+  opacity: .9;
+}
+
+/* ==== GRÁFICO DE BARRAS ==== */
+.page-plantitas .bars{
+  height:240px;
+  width:100%;
+  margin:0;                /* sin márgenes laterales */
+  padding:6px 0;           /* un poquito de aire vertical */
+  display:grid;            /* grid llena el ancho exacto del contenedor */
+  grid-template-columns: repeat(7, 1fr); /* 7 columnas iguales */
+  gap:14px;
+  align-items:end;
+}
+
+.page-plantitas .bar {        
   position: relative;
   height: 100%;
   border-radius: 12px;
-  background: #222;
-  border: 1px solid #444;
+  background: #fff;
+  border: 1px solid var(--border);
   overflow: hidden;
+  transition: transform .1s ease, box-shadow .2s ease;
 }
-.bar-fill {
+.page-plantitas .bar:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+.page-plantitas .bar-fill {
   width: 100%;
-  background: linear-gradient(180deg, #fff, #bbb); /* blanco → gris */
+  background: var(--primary);
   border-radius: 12px 12px 0 0;
+  transition: height 0.3s ease;
 }
-.bar-val {
+
+.page-plantitas .bar-val {
   position: absolute;
   bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 12px;
-  color: #fff;
+  font-weight: 700;
+  color: var(--text);
+}
+.page-plantitas .bar-val.inside {
+  color: #fff; 
+  margin: 4px 0;
+}
+.page-plantitas .bar-label {
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 13px;
+  color: #111;
   font-weight: 600;
+  z-index: 2;
 }
 
-/* ====== Tarjetas ====== */
-.card {
-  border-radius: 16px;
-  border: 1px solid #333;
-  background: #111; /* negro/gris oscuro */
-  color: #fff;
-}
-.card-head {
-  padding: 12px 16px;
-  border-bottom: 1px solid #333;
-  font-weight: 600;
-}
-.card-body { padding: 16px; }
-
-/* ====== Tablas ====== */
-.table { display: grid; gap: 6px; }
-.thead, .tr { display: grid; grid-template-columns: 1.2fr .6fr .8fr; gap: 8px; }
-.thead { font-weight: 600; opacity: .95; color: #fff; }
-.td, .th {
-  padding: 8px 10px;
-  border: 1px solid #333;
-  border-radius: 8px;
-  background: #1a1a1a;
-  color: #fff;
+/* Valor abajo */
+.page-plantitas .bar-val {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 700;
+  color: #111;
+  z-index: 2;
 }
 
-/* ====== KPIs ====== */
-.grid.kpis {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(180px, 1fr));
-  gap: 12px;
-  margin-top: 12px;
+/* ===== Tabla ===== */
+.page-plantitas .table {display:grid;gap:8px;max-width:95%;margin:0 auto}
+.page-plantitas .thead,.page-plantitas .tr {
+  display:grid;gap:8px;grid-template-columns:1.3fr .6fr .8fr;
 }
-@media (max-width: 1024px) {
-  .grid.kpis { grid-template-columns: repeat(2, 1fr); }
+.page-plantitas .th {
+  padding:10px;border:1px solid var(--border);border-radius:10px;
+  background:var(--primary);color:#fff;font-weight:700;
 }
-@media (max-width: 560px) {
-  .grid.kpis { grid-template-columns: 1fr; }
+.page-plantitas .td {
+  padding:10px;border:1px solid var(--border);border-radius:10px;
+  background:#fff;color:var(--text);
 }
+.page-plantitas .tr:nth-child(even) .td {background:var(--bg)} /* filas alternadas */
+.page-plantitas .tr:hover .td {background:var(--primary-light);color:#fff}
 
-/* ====== Sección inferior de tablas ====== */
-.grid.two {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  margin-top: 16px;
+/* ===== Notas ===== */
+.page-plantitas .notes {
+  margin:0;padding-left:18px;color:var(--text);
+  border-left:4px solid var(--warn); /* acento mostaza */
 }
-@media (max-width: 1024px) {
-  .grid.two { grid-template-columns: 1fr; }
-}
-
-/* ====== Header ====== */
-.dash-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #222;
-}
-.brand { display: flex; align-items: center; gap: 12px; }
-.brand-title { margin: 0; font-size: 22px; color: #fff; }
-.brand-sub { font-size: 12px; color: #bbb; }
-.btn.ghost {
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: transparent;
-  color: #fff;
-}
+.page-plantitas .notes li {margin:8px 0}

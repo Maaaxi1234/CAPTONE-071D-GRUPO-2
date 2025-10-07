@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import api from "../services/api";
+import api, { API_BASE } from "../services/api";
 import "../styles/inventory.css";
 
 export default function Inventario() {
@@ -16,11 +16,12 @@ export default function Inventario() {
 
   const [showNewCat, setShowNewCat] = useState(false);
   const [newCatName, setNewCatName] = useState("");
+  const [file, setFile] = useState(null);
+  const [preview, setPreview] = useState("");
 
   function blankForm() {
     return {
-      // campos del producto
-      manualId: "",      // ⬅️ NUEVO (solo para crear)
+      manualId: "",
       name: "",
       price: "",
       stock: "",
@@ -74,14 +75,17 @@ export default function Inventario() {
   function openCreate(prefCatId = "") {
     setEditing(null);
     setForm({ ...blankForm(), category_id: prefCatId || "" });
+    setFile(null);
+    setPreview("");
     setShowNewCat(false);
     setNewCatName("");
     setOpen(true);
   }
+
   function openEdit(p) {
     setEditing(p);
     setForm({
-      manualId: "", // no mostramos id al editar
+      manualId: "",
       name: p.name || "",
       price: p.price ?? "",
       stock: p.stock ?? "",
@@ -92,81 +96,77 @@ export default function Inventario() {
       track: true,
       tax19: true,
     });
+    setFile(null);
+    setPreview(p.image ? imgUrl(p.image) : "");
     setShowNewCat(false);
     setNewCatName("");
     setOpen(true);
   }
+
   function closeModal() {
     setOpen(false);
     setEditing(null);
     setForm(blankForm());
     setShowNewCat(false);
     setNewCatName("");
+    setFile(null);
+    setPreview("");
   }
 
-  function payloadForCreate(f) {
-    const payload = {
-      // 'id' va solo si lo escribes
-      name: (f.name || "").trim(),
-      price: Number(f.price || 0),
-      stock: Number(f.stock || 0),
-      sku: (f.sku || "").trim(),
-      barcode: (f.barcode || "").trim() || null,
-      image: (f.image || "").trim() || null,
-      category_id: f.category_id ? Number(f.category_id) : null,
-    };
-    const manualId = (f.manualId || "").trim();
-    if (manualId) payload.id = manualId;  // ⬅️ si lo pones, se envía
-    return payload;
+  function imgUrl(src) {
+    if (!src) return "";
+    return src.startsWith("http") ? src : `${API_BASE}${src}`;
   }
 
-  function payloadForUpdate(f) {
-    return {
-      name: (f.name || "").trim(),
-      price: Number(f.price || 0),
-      stock: Number(f.stock || 0),
-      sku: (f.sku || "").trim(),
-      barcode: (f.barcode || "").trim() || null,
-      image: (f.image || "").trim() || null,
-      category_id: f.category_id ? Number(f.category_id) : null,
-    };
+  function buildFormData(f, isEdit) {
+    const fd = new FormData();
+    if (!isEdit && (f.manualId || "").trim()) fd.append("id", f.manualId.trim());
+    fd.append("name", (f.name || "").trim());
+    fd.append("price", String(Number(f.price || 0)));
+    fd.append("stock", String(Number(f.stock || 0)));
+    fd.append("sku", (f.sku || "").trim());
+    if ((f.barcode || "").trim()) fd.append("barcode", f.barcode.trim());
+    fd.append("category_id", String(f.category_id));
+    if (file) fd.append("image", file);
+    return fd;
   }
 
   async function save() {
-    if (!form.category_id) return alert("Selecciona una categoría (o crea una con “+ Nueva”).");
+    if (!form.category_id) return alert("Selecciona una categoría.");
     if (!form.name.trim()) return alert("El nombre es obligatorio.");
     if (!String(form.price).trim()) return alert("El precio es obligatorio.");
     if (!form.sku.trim()) return alert("El SKU es obligatorio.");
 
     try {
       if (editing) {
-        const payload = payloadForUpdate(form);
-        const { data } = await api.patch(`/api/products/${editing.id}/`, payload);
+        const fd = buildFormData(form, true);
+        const { data } = await api.patch(`/api/products/${editing.id}/`, fd);
         setProducts((prev) => prev.map((p) => (p.id === editing.id ? data : p)));
       } else {
-        const payload = payloadForCreate(form);
-        const { data } = await api.post(`/api/products/`, payload);
+        const fd = buildFormData(form, false);
+        const { data } = await api.post(`/api/products/`, fd);
         setProducts((prev) => [data, ...prev]);
       }
       closeModal();
     } catch (e) {
-      const status = e?.response?.status;
-      const detail = e?.response?.data || e?.message || "Error";
-      console.error("Save product error:", status, detail);
-      alert(`No se pudo guardar el producto.\nStatus: ${status}\n${JSON.stringify(detail)}`);
+      console.error(e?.response?.data || e);
+      alert("No se pudo guardar el producto.");
     }
   }
 
   async function remove(id) {
-    if (!confirm("¿Eliminar este producto?")) return;
-    try {
-      await api.delete(`/api/products/${id}/`);
-      setProducts((prev) => prev.filter((p) => p.id !== id));
-    } catch (e) {
-      alert("No se pudo eliminar.");
-      console.error(e);
-    }
+  if (!confirm("¿Eliminar este producto?")) return;
+  try {
+    await api.delete(`/api/products/${id}/`);
+    setProducts((prev) => prev.filter((p) => p.id !== id));
+  } catch (e) {
+    const msg =
+      e?.response?.data?.detail ||
+      e?.response?.data?.error ||
+      "No se pudo eliminar.";
+    alert(msg);
   }
+}
 
   async function adjStock(p, delta) {
     try {
@@ -176,8 +176,7 @@ export default function Inventario() {
         category_id: p.category?.id ?? p.category,
       });
       setProducts((prev) => prev.map((x) => (x.id === p.id ? data : x)));
-    } catch (e) {
-      console.error(e);
+    } catch {
       alert("No se pudo actualizar el stock.");
     }
   }
@@ -191,16 +190,13 @@ export default function Inventario() {
       setForm((f) => ({ ...f, category_id: data.id }));
       setShowNewCat(false);
       setNewCatName("");
-    } catch (e) {
-      const status = e?.response?.status;
-      const detail = e?.response?.data || e?.message || "Error";
-      console.error("Create category error:", status, detail);
-      alert(`No se pudo crear la categoría.\nStatus: ${status}\n${JSON.stringify(detail)}`);
+    } catch {
+      alert("No se pudo crear la categoría.");
     }
   }
 
   return (
-    <div className="inv-wrap">
+    <div className="inv-root">
       <header className="inv-bar">
         <div className="left">
           <h1>Inventario</h1>
@@ -214,60 +210,74 @@ export default function Inventario() {
             onChange={(e) => setQ(e.target.value)}
           />
           <label className="chk">
-            <input type="checkbox" checked={lowOnly} onChange={(e) => setLowOnly(e.target.checked)} />
+            <input
+              type="checkbox"
+              checked={lowOnly}
+              onChange={(e) => setLowOnly(e.target.checked)}
+            />
             Stock bajo (≤5)
           </label>
-          <button className="btn primary" onClick={() => openCreate()}>Nuevo</button>
+          <button className="btn primary" onClick={() => openCreate()}>
+            Nuevo
+          </button>
         </div>
       </header>
 
       <section className="inv-board">
         {loading && <div className="loading">Cargando…</div>}
 
-        {!loading && grouped.map(({ category, items }) => (
-          <div key={category.id} className="inv-col">
-            <div className="col-head">
-              <div className="title">{category.name}</div>
-              <div className="count">{items.length}</div>
-              <button className="mini" title="Añadir en esta categoría" onClick={() => openCreate(category.id)}>＋</button>
-            </div>
+        {!loading &&
+          grouped.map(({ category, items }) => (
+            <div key={category.id} className="inv-col">
+              <div className="col-head">
+                <div className="title">{category.name}</div>
+                <div className="count">{items.length}</div>
+                <button className="mini" onClick={() => openCreate(category.id)}>
+                  ＋
+                </button>
+              </div>
 
-            <div className="col-body">
-              {items.map((p) => (
-                <article key={p.id} className="prod-card">
-                  <header className="pc-head">
-                    <div className="pc-name" title={p.name}>{p.name}</div>
-                    <div className="pc-sku">{p.sku || "—"}</div>
-                  </header>
+              <div className="col-body">
+                {items.map((p) => (
+                  <article key={p.id} className="prod-card">
+                    <header className="pc-head">
+                      <div className="pc-name">{p.name}</div>
+                      <div className="pc-sku">{p.sku || "—"}</div>
+                    </header>
 
-                  <div className="pc-main">
-                    <div className="pc-img">
-                      {p.image ? <img src={p.image} alt={p.name} /> : <div className="ph">🪴</div>}
-                    </div>
-                    <div className="pc-info">
-                      <div className="price">{formatCLP(p.price ?? 0)}</div>
-                      <div className="tax">19% IVA</div>
-                      <div className="stock">A la mano: <strong>{p.stock ?? 0}</strong> Unidades</div>
-
-                      <div className="stock-ops">
-                        <button className="chip" onClick={() => adjStock(p, +1)}>+1</button>
-                        <button className="chip" onClick={() => adjStock(p, +5)}>+5</button>
-                        <button className="chip ghost" onClick={() => adjStock(p, -1)}>-1</button>
+                    <div className="pc-main">
+                      <div className="pc-img">
+                        {p.image ? (
+                          <img src={imgUrl(p.image)} alt={p.name} />
+                        ) : (
+                          <div className="ph">🪴</div>
+                        )}
+                      </div>
+                      <div className="pc-info">
+                        <div className="price">{formatCLP(p.price ?? 0)}</div>
+                        <div className="tax">19% IVA</div>
+                        <div className="stock">
+                          A la mano: <strong>{p.stock ?? 0}</strong> Unidades
+                        </div>
+                        <div className="stock-ops">
+                          <button className="chip" onClick={() => adjStock(p, +1)}>+1</button>
+                          <button className="chip" onClick={() => adjStock(p, +5)}>+5</button>
+                          <button className="chip ghost" onClick={() => adjStock(p, -1)}>-1</button>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <footer className="pc-actions">
-                    <button className="btn" onClick={() => openEdit(p)}>Editar</button>
-                    <button className="btn danger" onClick={() => remove(p.id)}>Eliminar</button>
-                  </footer>
-                </article>
-              ))}
+                    <footer className="pc-actions">
+                      <button className="btn" onClick={() => openEdit(p)}>Editar</button>
+                      <button className="btn danger" onClick={() => remove(p.id)}>Eliminar</button>
+                    </footer>
+                  </article>
+                ))}
 
-              {!items.length && <div className="empty-col">Sin productos</div>}
+                {!items.length && <div className="empty-col">Sin productos</div>}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
       </section>
 
       {open && (
@@ -285,11 +295,9 @@ export default function Inventario() {
                     className="inp"
                     value={form.name}
                     onChange={(e) => setForm({ ...form, name: e.target.value })}
-                    placeholder="Ej: Monstera deliciosa mediana"
                   />
                 </label>
 
-                {/* ID opcional solo al crear */}
                 {!editing && (
                   <label>
                     <span>ID (opcional)</span>
@@ -297,7 +305,6 @@ export default function Inventario() {
                       className="inp"
                       value={form.manualId}
                       onChange={(e) => setForm({ ...form, manualId: e.target.value })}
-                      placeholder="Si lo dejas vacío se genera automáticamente"
                     />
                   </label>
                 )}
@@ -318,7 +325,6 @@ export default function Inventario() {
                     <button
                       type="button"
                       className="btn mini"
-                      title="Nueva categoría"
                       onClick={() => { setShowNewCat((s) => !s); setNewCatName(""); }}
                     >
                       + Nueva
@@ -329,12 +335,11 @@ export default function Inventario() {
                     <div className="inline-create">
                       <input
                         className="inp"
-                        placeholder='Escribe el nombre (ej. "Suculentas")'
                         value={newCatName}
                         onChange={(e) => setNewCatName(e.target.value)}
                       />
                       <button type="button" className="btn primary mini" onClick={quickAddCategory}>
-                        Crear “{(newCatName || "").trim() || "…"}”
+                        Crear
                       </button>
                       <button type="button" className="btn ghost mini" onClick={() => { setShowNewCat(false); setNewCatName(""); }}>
                         Cancelar
@@ -344,7 +349,7 @@ export default function Inventario() {
                 </label>
 
                 <label>
-                  <span>Precio de venta</span>
+                  <span>Precio</span>
                   <input
                     className="inp right"
                     type="number"
@@ -373,7 +378,6 @@ export default function Inventario() {
                     className="inp"
                     value={form.sku}
                     onChange={(e) => setForm({ ...form, sku: e.target.value })}
-                    placeholder="Ej: MON-MED-01"
                   />
                 </label>
 
@@ -383,18 +387,26 @@ export default function Inventario() {
                     className="inp"
                     value={form.barcode}
                     onChange={(e) => setForm({ ...form, barcode: e.target.value })}
-                    placeholder="EAN/UPC"
                   />
                 </label>
 
                 <label className="col-span-2">
-                  <span>URL de imagen</span>
+                  <span>Imagen</span>
                   <input
                     className="inp"
-                    value={form.image}
-                    onChange={(e) => setForm({ ...form, image: e.target.value })}
-                    placeholder="https://…"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const f = e.target.files?.[0] || null;
+                      setFile(f);
+                      setPreview(f ? URL.createObjectURL(f) : (form.image ? imgUrl(form.image) : ""));
+                    }}
                   />
+                  {preview ? (
+                    <div style={{ marginTop: 8 }}>
+                      <img src={preview} alt="preview" style={{ maxHeight: 120, borderRadius: 8 }} />
+                    </div>
+                  ) : null}
                 </label>
 
                 <label className="row">
@@ -412,7 +424,7 @@ export default function Inventario() {
                     checked={form.tax19}
                     onChange={(e) => setForm({ ...form, tax19: e.target.checked })}
                   />
-                  Impuesto de ventas 19% IVA
+                  Impuesto 19% IVA
                 </label>
               </div>
             </div>

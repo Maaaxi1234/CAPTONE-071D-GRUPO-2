@@ -3,10 +3,10 @@ services:
     image: mariadb:10.11
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_NAME}
-      MYSQL_USER: ${DB_USER}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
     ports:
       - "3306:3306"   # Opcional en dev; si hay conflicto, elimina esta línea
     volumes:
@@ -59,7 +59,9 @@ services:
     depends_on:
       - backend
     volumes:
+      - ./Frontend:/usr/src/app  
       - /usr/src/app/node_modules
+    command: npm run dev -- --host 
 
 volumes:
   dbdata:

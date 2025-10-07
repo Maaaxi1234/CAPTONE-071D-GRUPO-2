@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api,{ API_BASE } from "../services/api";
 import "../styles/shop.css";
 
 export default function Shop() {
@@ -137,7 +137,7 @@ export default function Shop() {
           {filtered.map((p) => (
             <button key={p.id} className="prod" onClick={() => addToCart(p)}>
               <div className="pic">
-                <img src={p.image || "/img/prod/placeholder.png"} alt={p.name} loading="lazy" />
+                <img src={p.image?.startsWith("http") ? p.image : `${API_BASE}${p.image}`} alt={p.name} />
               </div>
               <div className="pname">{p.name}</div>
               <div className="pprice">{formatCLP(p.price)}</div>
