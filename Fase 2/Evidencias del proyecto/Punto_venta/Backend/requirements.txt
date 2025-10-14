@@ -5,3 +5,9 @@ django-cors-headers>=4.4
 mysqlclient>=2.2
 python-dotenv>=1.0
 Pillow
+pytest
+pytest-django
+pytest-cov
+model-bakery
+selenium>=4.0.0
+webdriver-manager>=4.0.0

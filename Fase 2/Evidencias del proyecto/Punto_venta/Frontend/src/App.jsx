@@ -53,6 +53,7 @@ export default function App() {
         <BrowserRouter>
           <Routes>
             {/* Públicas */}
+
             <Route path="/login" element={<Login />} />
             <Route path="/shop" element={
               <ProtectedRoute>
@@ -61,6 +62,7 @@ export default function App() {
                 </RoleGate>
               </ProtectedRoute>
             } />
+            
             <Route path="/shop/success" element={
               <ProtectedRoute>
                 <RoleGate allow={["vendedor"]}>

@@ -1,6 +1,8 @@
 from django.db import models
 from django.utils import timezone
 import os, uuid
+from django.core.validators import MinValueValidator
+from django.db.models import Q, CheckConstraint
 
 class Category(models.Model):
     name = models.CharField(max_length=80, unique=True)
@@ -18,12 +20,17 @@ class Product(models.Model):
     sku = models.CharField(max_length=40, unique=True)
     name = models.CharField(max_length=120)
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products')
-    price = models.PositiveIntegerField(help_text="Precio en CLP, sin decimales")
+    price = models.PositiveIntegerField(help_text="Precio en CLP, sin decimales",validators=[MinValueValidator(1)])
     stock = models.PositiveIntegerField(default=0)
     image = models.ImageField(upload_to=product_image_path, blank=True, null=True)
 
     def __str__(self):
         return f"{self.name} ({self.sku})"
+    
+    class Meta:
+        constraints = [
+            CheckConstraint(check=Q(price__gt=0), name="product_price_gt_0"),
+        ]
 
 class Order(models.Model):
     PAYMENT_CHOICES = [
@@ -40,12 +47,6 @@ class Order(models.Model):
 
     code = models.CharField(max_length=40, unique=True, blank=True)
     created_at = models.DateTimeField(default=timezone.now)
-    full_name = models.CharField(max_length=120)
-    email = models.EmailField(blank=True, null=True)
-    phone = models.CharField(max_length=30)
-    delivery_mode = models.CharField(max_length=20, choices=[('retiro','Retiro en tienda'),('envio','Envío a domicilio')])
-    address = models.CharField(max_length=200, blank=True, null=True)
-    notes = models.TextField(blank=True, null=True)
     payment_method = models.CharField(max_length=20, choices=PAYMENT_CHOICES)
     total = models.PositiveIntegerField(default=0)
 

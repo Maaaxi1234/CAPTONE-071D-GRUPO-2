@@ -385,6 +385,21 @@
   cursor: not-allowed;
   box-shadow: none;
 }
+.ticket-page {
+  min-height: 100vh;
+  background: #f0f0f0;   /* Gris claro */
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 24px 0;
+}
+
+.ticket-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
 
 /* Responsivo */
 @media (max-width: 560px){

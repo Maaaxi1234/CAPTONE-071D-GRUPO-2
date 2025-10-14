@@ -64,11 +64,11 @@ class ProductSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("El precio no puede ser negativo.")
         return v
 
-    def validate_stock(self, v):
+    def validate_price(self, v):
         if v is None:
-            return 0
+            raise serializers.ValidationError("El precio es obligatorio.")
         if v < 0:
-            raise serializers.ValidationError("El stock no puede ser negativo.")
+            raise serializers.ValidationError("El precio no puede ser negativo.")
         return v
 
     def create(self, validated_data):
@@ -82,45 +82,22 @@ class OrderItemInputSerializer(serializers.Serializer):
     product_id = serializers.CharField()
     quantity = serializers.IntegerField(min_value=1)
 
-class CustomerSerializer(serializers.Serializer):
-    full_name = serializers.CharField()
-    email = serializers.EmailField(required=False, allow_null=True, allow_blank=True)
-    phone = serializers.CharField()
-
-class DeliverySerializer(serializers.Serializer):
-    mode = serializers.ChoiceField(choices=["retiro", "envio"])
-    address = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-    notes = serializers.CharField(required=False, allow_null=True, allow_blank=True)
-
 class OrderCreateSerializer(serializers.Serializer):
-    customer = CustomerSerializer()
-    delivery = DeliverySerializer()
     payment_method = serializers.ChoiceField(choices=["efectivo","debito","credito","transferencia"])
     items = OrderItemInputSerializer(many=True)
 
     def validate(self, data):
-        if data["delivery"]["mode"] == "envio" and not (data["delivery"].get("address") or "").strip():
-            raise serializers.ValidationError({"delivery": ["Dirección requerida para envío."]})
         if not data.get("items"):
             raise serializers.ValidationError({"items": ["Debe incluir al menos un producto."]})
         return data
 
     def create(self, validated):
         from django.db import transaction
-
-        customer = validated["customer"]
-        delivery = validated["delivery"]
         items = validated["items"]
         pm = validated["payment_method"]
 
         with transaction.atomic():
             order = Order.objects.create(
-                full_name=customer["full_name"],
-                email=customer.get("email"),
-                phone=customer["phone"],
-                delivery_mode=delivery["mode"],
-                address=delivery.get("address"),
-                notes=delivery.get("notes") or "",
                 payment_method=pm,
                 status="paid",
             )
@@ -161,7 +138,6 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "id","code","created_at","status",
-            "full_name","phone","delivery_mode","address",
             "payment_method","total","items"
         ]
 
