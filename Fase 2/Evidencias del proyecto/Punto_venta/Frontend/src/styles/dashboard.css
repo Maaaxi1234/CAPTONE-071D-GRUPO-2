@@ -274,3 +274,48 @@
   border-left:4px solid var(--warn); /* acento mostaza */
 }
 .page-plantitas .notes li {margin:8px 0}
+/* ===== Botones sólidos (no ghost) ===== */
+.page-plantitas .btn.solid {
+  all: unset;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 700;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(46,125,50,.22);
+  transition: transform .08s ease, filter .18s ease, box-shadow .18s ease;
+  user-select: none;
+}
+.page-plantitas .btn.solid:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(46,125,50,.28);
+}
+.page-plantitas .btn.solid:active {
+  transform: translateY(0);
+  filter: brightness(0.96);
+}
+.page-plantitas .btn.solid:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--primary), white 40%);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(102,187,106,.35);
+}
+.page-plantitas .btn.solid.secondary {
+  background: var(--primary-light);
+  box-shadow: 0 6px 16px rgba(102,187,106,.2);
+}
+.page-plantitas .btn.solid[disabled] {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+  filter: none;
+  box-shadow: none;
+}
+
+/* Grupo para separación ordenada */
+.page-plantitas .btn-group { display:flex; gap:10px; flex-wrap:wrap; }
+.page-plantitas .btn .icon { width:18px; height:18px; display:inline-block; }

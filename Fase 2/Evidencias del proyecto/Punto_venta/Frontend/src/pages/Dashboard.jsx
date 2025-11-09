@@ -253,6 +253,7 @@ function Hub() {
     shop: ["vendedor", "admin"],
     inventario: ["bodegero", "admin"],
     orders: ["vendedor", "admin"],
+    reports: ["admin"],
   };
 
   // ---- Helper para estilos ----
@@ -266,11 +267,24 @@ function Hub() {
     if (canAccess[routeKey]?.includes(role)) navigate(path);
   };
 
+  // ====== NUEVO: decidir destino según caja abierta ======
+  const isCashOpen = () => {
+    try {
+      return !!JSON.parse(localStorage.getItem("cash_state") || "{}")?.open;
+    } catch {
+      return false;
+    }
+  };
+  const goToPOS = () => {
+    const dest = isCashOpen() ? "/shop" : "/cash/open";
+    handleClick("shop", dest);
+  };
+
   return (
     <div className="hub">
       <button
         className={btnClass("shop")}
-        onClick={() => handleClick("shop", "/shop")}
+        onClick={goToPOS}
       >
         <span className="tile-emoji">🧾</span>
         <span className="tile-title">Punto de venta</span>
@@ -294,10 +308,17 @@ function Hub() {
         <span className="tile-title">Ventas</span>
         <span className="tile-sub">Historial de ventas</span>
       </button>
+      <button
+        className={btnClass("reports")}
+        onClick={() => handleClick("reports", "/reports")}
+      >
+        <span className="tile-emoji">📊</span>
+        <span className="tile-title">Informes</span>
+        <span className="tile-sub">Informes de ventas</span>
+      </button>
     </div>
   );
 }
-
 
 /* ---------- Utils ---------- */
 function formatCLP(n) {

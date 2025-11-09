@@ -31,6 +31,12 @@ class Product(models.Model):
         constraints = [
             CheckConstraint(check=Q(price__gt=0), name="product_price_gt_0"),
         ]
+    
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["category"], name="idx_products_category"),
+        ]
 
 class Order(models.Model):
     PAYMENT_CHOICES = [
@@ -65,6 +71,12 @@ class Order(models.Model):
 
     def __str__(self):
         return self.code or f"Order {self.pk}"
+    class Meta:
+        indexes = [
+            models.Index(fields=["created_at"], name="idx_orders_created_at"),
+            models.Index(fields=["status"], name="idx_orders_status"),
+            models.Index(fields=["payment_method"], name="idx_orders_pay_method"),
+        ]
     
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
@@ -81,3 +93,9 @@ class OrderItem(models.Model):
 
     def line_total(self):
         return self.quantity * self.price
+    
+    class Meta:
+        indexes = [
+            models.Index(fields=["order"], name="idx_oitems_order"),
+            models.Index(fields=["product"], name="idx_oitems_product"),
+        ]

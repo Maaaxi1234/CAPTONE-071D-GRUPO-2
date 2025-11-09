@@ -1,21 +1,38 @@
+// src/components/Ticket.jsx
 import React, { useEffect } from "react";
 import "../styles/ticket.css";
 
-
-export default function Ticket({ order, autoPrint = false }) {
+export default function Ticket({ order = {}, autoPrint = false }) {
+  // === Utils ===
   const CLP = (n) =>
     new Intl.NumberFormat("es-CL", {
       style: "currency",
       currency: "CLP",
       maximumFractionDigits: 0,
-    }).format(n || 0);
-  const fmtDateTime = (s) =>
+    }).format(Number(n || 0));
+
+  const fmtDateTime = (d) =>
     new Intl.DateTimeFormat("es-CL", {
       dateStyle: "short",
       timeStyle: "short",
-    }).format(new Date(s));
+    }).format(d);
 
-  // ⚙️ Datos fijos del negocio
+  // Si el backend no trae created_at, usamos ahora
+  const createdAt =
+    order.created_at ? new Date(order.created_at) : new Date();
+
+  // Map de método de pago a etiqueta amigable
+  const payLabel = {
+    efectivo: "Efectivo",
+    debito: "Tarjeta",
+    credito: "Tarjeta",
+    tarjeta: "Tarjeta",
+    transferencia: "Transferencia",
+  };
+  const paymentRaw = (order.payment_method || "").toLowerCase();
+  const paymentText = payLabel[paymentRaw] || (order.payment_method || "").toUpperCase();
+
+  // Datos del negocio (tu info fija)
   const biz = {
     logoText: "PLANTITAS",
     razon: "PLANTITAS DONDE LA FRAN",
@@ -28,12 +45,35 @@ export default function Ticket({ order, autoPrint = false }) {
     sucursal: "Casa Matriz",
   };
 
+  // Totales (con fallback a 19% IVA si no viene neto/iva desglosado)
   const total = Number(order.total || 0);
-  const neto = order.neto ?? Math.round(total / 1.19);
-  const iva = order.iva ?? (total - neto);
+  const neto = order.neto != null ? Number(order.neto) : Math.round(total / 1.19);
+  const iva = order.iva != null ? Number(order.iva) : total - neto;
+
+  // Cliente (acepta order.customer_name o order.customer.full_name)
+  const customerName =
+    order.customer_name ||
+    order.customer?.full_name ||
+    order.customer?.name ||
+    "";
+
+  // Numeración de documento
+  const number = order.number || order.code || order.id || "-";
+
+  // Línea: cálculo de unitario robusto
+  const unitFrom = (it) => {
+    const qty = Number(it.quantity || 1);
+    if (it.unit_price != null) return Number(it.unit_price);
+    if (it.price != null) return Number(it.price);
+    if (it.line_total != null && qty > 0) return Number(it.line_total) / qty;
+    return 0;
+  };
 
   useEffect(() => {
-    if (autoPrint) setTimeout(() => window.print(), 400);
+    if (autoPrint) {
+      const t = setTimeout(() => window.print(), 400);
+      return () => clearTimeout(t);
+    }
   }, [autoPrint]);
 
   return (
@@ -56,13 +96,11 @@ export default function Ticket({ order, autoPrint = false }) {
       {/* Info de orden */}
       <div className="t-meta">
         <div>
-          N°: <b>{order.number || order.id}</b>
+          N°: <b>{number}</b>
         </div>
-        <div>Fecha: {fmtDateTime(order.created_at)}</div>
-        {order.customer_name && <div>Cliente: {order.customer_name}</div>}
-        {order.payment_method && (
-          <div>Pago: {order.payment_method.toUpperCase()}</div>
-        )}
+        <div>Fecha: {fmtDateTime(createdAt)}</div>
+        {customerName && <div>Cliente: {customerName}</div>}
+        {paymentText && <div>Pago: {paymentText}</div>}
       </div>
 
       {/* Tabla productos */}
@@ -73,16 +111,25 @@ export default function Ticket({ order, autoPrint = false }) {
           <div className="c-val">VALOR U.</div>
           <div className="c-sub">SUBTOTAL</div>
         </div>
-        {order.items?.map((it, i) => (
-          <div key={i} className="t-row">
-            <div className="c-cant">{it.quantity}</div>
-            <div className="c-desc">
-              {it.product} {it.sku ? `(${it.sku})` : ""}
+
+        {(order.items || []).map((it, i) => {
+          const qty = Number(it.quantity || 0);
+          const unit = unitFrom(it);
+          const line = Number(it.line_total != null ? it.line_total : unit * qty);
+          const name = it.product || it.name || it.title || "Producto";
+          const sku = it.sku ? ` (${it.sku})` : "";
+          return (
+            <div key={i} className="t-row">
+              <div className="c-cant">{qty}</div>
+              <div className="c-desc">
+                {name}
+                {sku}
+              </div>
+              <div className="c-val">{CLP(unit)}</div>
+              <div className="c-sub">{CLP(line)}</div>
             </div>
-            <div className="c-val">{CLP(it.unit_price ?? it.price ?? (it.line_total / (it.quantity || 1)))}</div>
-            <div className="c-sub">{CLP(it.line_total)}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Totales */}

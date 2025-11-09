@@ -155,3 +155,16 @@ class OrderSerializer(serializers.ModelSerializer):
                 "line_total": i.quantity * i.price
             })
         return out
+class KPIValueSerializer(serializers.Serializer):
+    label = serializers.CharField()
+    value = serializers.FloatField()
+
+class KPITotalesSerializer(serializers.Serializer):
+    total_ventas = serializers.FloatField()
+    tickets = serializers.IntegerField()
+    total_items = serializers.IntegerField()
+    ticket_promedio = serializers.FloatField()
+
+class SeriesPointSerializer(serializers.Serializer):
+    x = serializers.CharField()   # fecha o 'YYYY-MM'
+    y = serializers.FloatField()
