@@ -15,7 +15,7 @@ import {
 
 import {
   ResponsiveContainer,
-  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid,
+  LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ReferenceLine,
   BarChart, Bar, PieChart, Pie, Cell, Legend
 } from "recharts";
 
@@ -34,6 +34,7 @@ const CLP = (n) =>
     currency: "CLP",
     maximumFractionDigits: 0,
   }).format(n || 0);
+const MIN_MONTHLY_TARGET = 400000;
 
 export default function Reports() {
   // --------- estado ----------
@@ -92,7 +93,7 @@ export default function Reports() {
       setOverview(ov.data);
       setTopProd(tp.data);
       setMesMayor(mm.data);
-      setPorMes(pm.data);
+      setPorMes(pm.data || []);
       setPorCat(pc.data);
       setMedios(mp.data);
       setPromDiario(pd.data);
@@ -163,18 +164,18 @@ export default function Reports() {
         </div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
           <button
-            className="btn solid"
+            className="btn solid accent"
             type="button"
             onClick={() => navigate("/ReportesPersonalizados")}
           >
             Reportes personalizados
           </button>
           <button
-            className="btn ghost"
+            className="btn ghost accent"
             type="button"
             onClick={() => navigate("/")}
           >
-            Volver 
+            ← Volver al panel
           </button>
         </div>
       </header>
@@ -249,9 +250,15 @@ export default function Reports() {
               <LineChart data={porMes}>
                 <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis dataKey="x" tick={{ fill: "var(--text-sec)" }} axisLine={{ stroke: "var(--border)" }} />
-                <YAxis tick={{ fill: "var(--text-sec)" }} axisLine={{ stroke: "var(--border)" }} />
+                <YAxis tick={{ fill: "var(--text-sec)" }} axisLine={{ stroke: "var(--border)" }} domain={[0, "auto"]} />
                 <Tooltip formatter={(v) => CLP(v)} />
                 <Line type="monotone" dataKey="y" stroke="var(--primary)" />
+                <ReferenceLine
+                  y={MIN_MONTHLY_TARGET}
+                  stroke="#fbbf24"
+                  strokeDasharray="6 6"
+                  label={{ value: "Meta 400K", fill: "#fbbf24", position: "right" }}
+                />
               </LineChart>
             </ResponsiveContainer>
           </div>

@@ -1,22 +1,66 @@
 /* ===== Plantitas — Paleta Final ===== */
 .page-plantitas {
-  --bg: #F5F7F2;       /* fondo principal */
-  --panel: #FFFFFF;    /* tarjetas */
-  --panel-2: #F9FAFB;  /* headers suaves */
-  --border: #E5E7EB;   /* bordes */
-  --text: #212121;     /* texto principal (gris casi negro) */
-  --text-sec: #555555; /* texto secundario / labels */
+  --bg: #f4faf5;         /* fondo suave */
+  --panel: #ffffff;      /* tarjetas */
+  --panel-2: #edf7f0;    /* headers suaves */
+  --border: #dce8df;     /* bordes */
+  --text: #152d24;       /* texto principal */
+  --text-sec: #5a6b5f;   /* texto secundario */
 
-  --primary: #2E7D32;       /* Verde hoja intenso */
-  --primary-light: #66BB6A; /* Verde claro (hover, fluidez) */
-  --warn: #FFC107;          /* Amarillo mostaza (avisos) */
-  --error: #E53935;         /* Rojo tomate (alertas/stock bajo) */
+  --primary: #0f7a4c;        /* verde base */
+  --primary-dark: #065f46;   /* verde oscuro botones */
+  --primary-light: #4ade80;  /* acento claro */
+  --warn: #fbbf24;
+  --error: #dc2626;
 
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  padding: 16px;
-  font-family: system-ui,"Segoe UI",Roboto,Arial,sans-serif;
+  padding: 20px;
+  font-family: "Segoe UI", system-ui, Roboto, Arial, sans-serif;
+}
+
+.page-plantitas .card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  box-shadow: 0 15px 35px rgba(6, 95, 70, 0.08);
+}
+
+.page-plantitas .dash-header {
+  border-radius: 18px;
+  padding: 18px 22px;
+  background: linear-gradient(90deg, var(--primary-dark), var(--primary));
+  color: #fff;
+  box-shadow: 0 18px 35px rgba(6, 95, 70, 0.25);
+}
+
+.page-plantitas .dash-header .brand-title {
+  color: #fff;
+}
+
+.page-plantitas .dash-header .brand-sub {
+  color: rgba(255,255,255,.85);
+}
+
+.page-plantitas .dash-header .header-actions .btn {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.35);
+  color: #fff;
+  font-weight: 600;
+  padding: 10px 20px;
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(0,0,0,.12);
+}
+
+.page-plantitas .dash-header .header-actions .btn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.page-plantitas.orders .card,
+.page-plantitas.reports .card,
+.page-plantitas.shop .card {
+  background: #ffffff;
 }
 
 /* ===== Header ===== */
@@ -319,3 +363,88 @@
 /* Grupo para separación ordenada */
 .page-plantitas .btn-group { display:flex; gap:10px; flex-wrap:wrap; }
 .page-plantitas .btn .icon { width:18px; height:18px; display:inline-block; }
+
+/* === Notas / recordatorios (solo dashboard) === */
+.dashboard-page .note-form{
+  display:flex;
+  gap:10px;
+  margin-bottom:12px;
+  flex-wrap:wrap;
+}
+.dashboard-page .note-form .inp{
+  flex:1;
+  border-radius:12px;
+}
+.dashboard-page .note-form .note-add{
+  border-radius:999px;
+  padding:12px 28px;
+  min-width:130px;
+  text-align:center;
+}
+.dashboard-page .notes{
+  margin:0;
+  padding:0;
+  list-style:none;
+  display:grid;
+  gap:10px;
+}
+.dashboard-page .notes li{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  padding:10px 14px;
+  background:var(--panel-2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  color:var(--text);
+  font-size:14px;
+}
+.dashboard-page .notes li span{ flex:1; }
+.dashboard-page .note-remove{
+  width:36px;
+  height:36px;
+  border-radius:50%;
+  padding:0;
+  border:1px solid #b91c1c;
+  background:#dc2626;
+  color:#fff;
+  font-weight:900;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+  line-height:1;
+  box-shadow:none;
+}
+.dashboard-page .note-remove:hover{
+  background:#dc2626;
+  border-color:#b91c1c;
+  color:#fff;
+}
+.dashboard-page .notes .note-empty{
+  justify-content:center;
+  font-style:italic;
+  color:var(--text-sec);
+}
+.page-plantitas .btn.solid.accent {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1f2937;
+  border-radius: 999px;
+  padding: 12px 26px;
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.35);
+}
+.page-plantitas .btn.solid.accent:hover {
+  filter: brightness(1.08);
+}
+.page-plantitas .btn.ghost.accent {
+  border-radius: 999px;
+  padding: 10px 24px;
+  border: 1px solid #fff;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 24px rgba(255,255,255,0.15);
+}
+.page-plantitas .btn.ghost.accent:hover {
+  background: rgba(255,255,255,0.28);
+}

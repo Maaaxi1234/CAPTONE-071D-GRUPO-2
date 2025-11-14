@@ -390,48 +390,31 @@ export default function ReportTabla({ initialFilters }) {
       : "Filtros y tabla personalizable";
 
   return (
-    <div className="inv-root" style={{ minHeight: "100vh", padding: 16 }}>
+    <div className="page-plantitas dashboard-page reports-perso">
 
-      <div
-        className="dash-header"
-        style={{
-          background: "var(--panel)",
-          border: "1px solid var(--border)",
-          borderRadius: 12,
-          padding: "12px 16px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          boxShadow: "var(--shadow)",
-          marginBottom: 12,
-        }}
-      >
-        <div className="brand" style={{ display: "flex", alignItems: "center", gap: 12 }}>
+      <header className="dash-header">
+        <div className="brand">
           <div className="brand-logo" />
           <div>
-            <h1 className="brand-title" style={{ margin: 0, color: "var(--text)", fontSize: 20 }}>
-              Informe de Productos
-            </h1>
-            <div className="brand-sub" style={{ color: "var(--muted)", fontSize: 12.5, marginTop: 2 }}>
-              {subtitle}
-            </div>
+            <h1 className="brand-title">Informe de Productos</h1>
+            <div className="brand-sub">{subtitle}</div>
           </div>
         </div>
-        <div className="header-actions" style={{ display: "flex", gap: 8 }}>
-          <Link className="btn ghost" to="/">
-            ← Volver
+        <div className="header-actions">
+          <Link className="btn ghost accent" to="/">
+            ← Volver al panel
           </Link>
         </div>
-      </div>
+      </header>
 
       {/* CONTENIDO */}
-      <div className="card" style={{ marginTop: 16 }}>
+      <section className="card filters-card">
         <div className="card-head">
           <h3>Informe de Productos </h3>
         </div>
 
-        <div className="card-body" style={{ display: "grid", gap: 12 }}>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <div className="card-body filters-body">
+          <div className="filters-row">
             <input
               type="date"
               className="btn ghost"
@@ -466,25 +449,25 @@ export default function ReportTabla({ initialFilters }) {
               />
             </label>
 
-            <button className="btn solid" disabled={loading} onClick={run}>
+            <button className="btn solid accent" disabled={loading} onClick={run}>
               {loading ? "Cargando…" : "Consultar"}
             </button>
-            <button className="btn" onClick={exportExcel}>
+            <button className="btn solid secondary" onClick={exportExcel}>
               Excel
             </button>
-            <button className="btn" onClick={exportPDFOficio}>
+            <button className="btn solid secondary" onClick={exportPDFOficio}>
               PDF 
             </button>
-            <button className="btn" onClick={imprimirPDFOficio}>
+            <button className="btn solid secondary" onClick={imprimirPDFOficio}>
               Imprimir 
             </button>
           </div>
 
-          <div className="card" style={{ padding: 12 }}>
+          <div className="card columns-card">
             <b>Columnas:</b>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+            <div className="column-grid">
               {Object.keys(COLUMN_LABEL).map((c) => (
-                <label key={c} className="btn ghost" style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
+                <label key={c} className="column-chip">
                   <input type="checkbox" checked={columns.includes(c)} onChange={() => toggleCol(c)} />
                   {COLUMN_LABEL[c]}
                 </label>
@@ -494,25 +477,17 @@ export default function ReportTabla({ initialFilters }) {
 
           {/* Errores */}
           {error && (
-            <div
-              style={{
-                border: "1px solid var(--danger)",
-                color: "var(--danger)",
-                background: "#FFF5F5",
-                borderRadius: 10,
-                padding: "8px 12px",
-              }}
-            >
+            <div className="alert error">
               {error}
             </div>
           )}
 
           {/* Tabla */}
-          <div className="card" style={{ padding: 12 }}>
+          <div className="card table-card">
             {loading ? (
-              <div style={{ display: "grid", placeItems: "center", height: 240 }}>Cargando…</div>
+              <div className="table-placeholder">Cargando…</div>
             ) : rows.length === 0 ? (
-              <div style={{ display: "grid", placeItems: "center", height: 240, color: "var(--muted)" }}>
+              <div className="table-placeholder muted">
                 Sin datos para los filtros seleccionados
               </div>
             ) : (
@@ -563,7 +538,7 @@ export default function ReportTabla({ initialFilters }) {
             )}
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

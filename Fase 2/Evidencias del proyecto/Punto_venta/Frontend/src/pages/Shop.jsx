@@ -41,9 +41,10 @@ export default function Shop() {
 
   // ===== Carrito =====
   const [cart, setCart] = useState([]);
-  const neto = cart.reduce((acc, l) => acc + l.price * l.qty, 0);
-  const tax = Math.round(neto * 0.19);
-  const total = neto + tax;
+  const TAX_RATE = 0.19;
+  const total = cart.reduce((acc, line) => acc + Number(line.price || 0) * line.qty, 0);
+  const neto = total ? Math.round(total / (1 + TAX_RATE)) : 0;
+  const tax = Math.max(0, total - neto);
 
   function addToCart(prod) {
     setCart((c) => {
@@ -118,7 +119,11 @@ export default function Shop() {
 
         <div className="totals">
           <div className="row">
-            <span>Impuestos</span>
+            <span>Neto</span>
+            <span>{formatCLP(neto)}</span>
+          </div>
+          <div className="row">
+            <span>IVA (incluido)</span>
             <span>{formatCLP(tax)}</span>
           </div>
           <div className="row total">

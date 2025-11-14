@@ -2,6 +2,59 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+const WRAP_STYLE = {
+  minHeight: "100vh",
+  display: "grid",
+  placeItems: "center",
+  padding: 16,
+  background: "linear-gradient(145deg, #e8f5ec 0%, #b5e0cc 35%, #0f7a4c 100%)",
+};
+
+const CARD_STYLE = {
+  width: "min(420px, 92vw)",
+  background: "#ffffff",
+  borderRadius: 20,
+  border: "1px solid #d4eadc",
+  boxShadow: "0 30px 65px rgba(6, 95, 70, 0.35)",
+  padding: 28,
+  display: "grid",
+  gap: 16,
+};
+
+const LABEL_STYLE = {
+  fontSize: 13,
+  fontWeight: 600,
+  color: "#1c3a2b",
+  marginBottom: 6,
+};
+
+const INPUT_STYLE = {
+  width: "100%",
+  height: 44,
+  borderRadius: 12,
+  border: "1px solid #c7dfd1",
+  background: "#f9fffb",
+  padding: "0 14px",
+  fontSize: 15,
+  color: "#0f2b20",
+  outline: "none",
+  boxShadow: "0 4px 14px rgba(15, 95, 70, 0.08)",
+};
+
+const BUTTON_STYLE = {
+  height: 46,
+  borderRadius: 14,
+  border: "none",
+  background: "linear-gradient(135deg, #065f46, #0f7a4c)",
+  color: "#fff",
+  fontWeight: 700,
+  fontSize: 16,
+  letterSpacing: 0.4,
+  cursor: "pointer",
+  boxShadow: "0 18px 28px rgba(6, 95, 70, 0.35)",
+  transition: "transform .15s ease, opacity .15s ease",
+};
+
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -29,60 +82,46 @@ export default function Login() {
   }
 
   return (
-    <div style={{
-      minHeight: "100vh",
-      display: "grid",
-      placeItems: "center",
-      background: "#0b0f19",
-      color: "#fff",
-      padding: 16
-    }}>
-      <form onSubmit={onSubmit} style={{
-        width: 360,
-        background: "#111827",
-        border: "1px solid #1f2937",
-        borderRadius: 12,
-        padding: 20,
-        display: "grid",
-        gap: 12
-      }}>
-        <h2 style={{ margin: 0 }}>Iniciar sesión</h2>
+    <div style={WRAP_STYLE}>
+      <form onSubmit={onSubmit} style={CARD_STYLE}>
+        <div>
+          <p style={{ margin: 0, fontSize: 13, color: "#5a6b5f" }}>Bienvenido a Plantitas POS</p>
+          <h2 style={{ margin: "4px 0 0", color: "#0f7a4c" }}>Iniciar sesión</h2>
+        </div>
+
         <label>
-          <div style={{ fontSize: 12, opacity: .8, marginBottom: 4 }}>Usuario</div>
+          <div style={LABEL_STYLE}>Usuario</div>
           <input
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             autoFocus
-            style={{
-              width: "100%", height: 40, borderRadius: 8,
-              border: "1px solid #374151", background: "#0f172a", color: "white", padding: "0 10px"
-            }}
+            style={INPUT_STYLE}
           />
         </label>
+
         <label>
-          <div style={{ fontSize: 12, opacity: .8, marginBottom: 4 }}>Contraseña</div>
+          <div style={LABEL_STYLE}>Contraseña</div>
           <input
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            style={{
-              width: "100%", height: 40, borderRadius: 8,
-              border: "1px solid #374151", background: "#0f172a", color: "white", padding: "0 10px"
-            }}
+            style={INPUT_STYLE}
           />
         </label>
 
         {error && (
-          <div style={{ color: "#fca5a5", fontSize: 14 }}>{error}</div>
+          <div style={{ color: "#b91c1c", fontSize: 14, background: "#fde8e8", padding: 10, borderRadius: 12 }}>
+            {error}
+          </div>
         )}
 
         <button
           type="submit"
           disabled={submitting}
           style={{
-            height: 42, borderRadius: 10, border: "none",
-            background: "#2563eb", color: "white", fontWeight: 800, cursor: "pointer",
-            opacity: submitting ? .7 : 1
+            ...BUTTON_STYLE,
+            opacity: submitting ? 0.75 : 1,
+            transform: submitting ? "translateY(0)" : "translateY(-1px)",
           }}
         >
           {submitting ? "Entrando…" : "Entrar"}

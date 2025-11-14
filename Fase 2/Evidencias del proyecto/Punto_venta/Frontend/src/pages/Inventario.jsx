@@ -1,6 +1,15 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import api, { API_BASE } from "../services/api";
 import "../styles/inventory.css";
+
+const PALETTE = [
+  { tone: "Bosque", value: "#065f46" },
+  { tone: "Selva", value: "#0f7a4c" },
+  { tone: "Hoja", value: "#4ade80" },
+  { tone: "Arena", value: "#fbbf24" },
+  { tone: "Nieve", value: "#ffffff" },
+];
 
 export default function Inventario() {
   const [loading, setLoading] = useState(true);
@@ -196,16 +205,27 @@ export default function Inventario() {
   }
 
   return (
-    <div className="inv-root">
-      <header className="inv-bar">
-        <div className="left">
-          <h1>Inventario</h1>
-          <span className="muted">Plantas y accesorios</span>
+    <div className="page-plantitas dashboard-page inv-root inventory-page">
+      <header className="dash-header inventory-head">
+        <div className="brand">
+          <div className="brand-logo" />
+          <div>
+            <h1 className="brand-title">Inventario</h1>
+            <div className="brand-sub">Plantas y accesorios</div>
+            <div className="palette">
+              {PALETTE.map((tone) => (
+                <span key={tone.tone} className="swatch">
+                  <i style={{ background: tone.value }} />
+                  {tone.tone}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
-        <div className="right">
+        <div className="inventory-controls">
           <input
             className="inp search"
-            placeholder="Buscar por nombre, SKU o código de barras…"
+            placeholder="Buscar por nombre, SKU o codigo de barras..."
             value={q}
             onChange={(e) => setQ(e.target.value)}
           />
@@ -217,9 +237,14 @@ export default function Inventario() {
             />
             Stock bajo (≤5)
           </label>
-          <button className="btn primary" onClick={() => openCreate()}>
-            Nuevo
+        </div>
+        <div className="header-actions">
+          <button className="btn solid accent" onClick={() => openCreate()}>
+            + Nuevo
           </button>
+          <Link className="btn ghost accent" to="/">
+            ← Volver al panel
+          </Link>
         </div>
       </header>
 

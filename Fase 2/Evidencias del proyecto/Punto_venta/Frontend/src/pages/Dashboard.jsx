@@ -4,6 +4,13 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import "../styles/dashboard.css";
 
+const NOTE_KEY = "dashboard_notes";
+const DEFAULT_NOTES = [
+  "Revisar proveedor de rosas (precio subió 4%).",
+  "Programar campaña Día de la Madre.",
+  "Etiquetas nuevas para ramos Deluxe.",
+];
+
 export default function Dashboard() {
   const { logout } = useAuth();
   const navigate = useNavigate();
@@ -17,6 +24,15 @@ export default function Dashboard() {
   const [ventas7, setVentas7] = useState([]);
   const [topProductos, setTopProductos] = useState([]);
   const [lowStock, setLowStock] = useState([]);
+  const [notes, setNotes] = useState(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem(NOTE_KEY) || "[]");
+      return Array.isArray(stored) && stored.length ? stored : DEFAULT_NOTES;
+    } catch {
+      return DEFAULT_NOTES;
+    }
+  });
+  const [noteInput, setNoteInput] = useState("");
 
   // ===== Configuración de zona horaria =====
   const TZ = "America/Santiago";
@@ -103,9 +119,25 @@ export default function Dashboard() {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    localStorage.setItem(NOTE_KEY, JSON.stringify(notes));
+  }, [notes]);
+
+  function handleAddNote(e) {
+    e.preventDefault();
+    const value = noteInput.trim();
+    if (!value) return;
+    setNotes((prev) => [...prev, value]);
+    setNoteInput("");
+  }
+
+  function handleDeleteNote(idx) {
+    setNotes((prev) => prev.filter((_, i) => i !== idx));
+  }
+
   // ===== Render =====
   return (
-    <div className="page page-plantitas">
+    <div className="page page-plantitas dashboard-page">
       {/* Header */}
       <header className="dash-header">
         <div className="brand">
@@ -160,10 +192,33 @@ export default function Dashboard() {
         </Card>
 
         <Card title="Notas / recordatorios">
+          <form className="note-form" onSubmit={handleAddNote}>
+            <input
+              className="inp"
+              placeholder="Escribe un recordatorio..."
+              value={noteInput}
+              onChange={(e) => setNoteInput(e.target.value)}
+            />
+            <button className="btn primary note-add" type="submit">
+              Agregar
+            </button>
+          </form>
+
           <ul className="notes">
-            <li>Revisar proveedor de rosas (precio subió 4%).</li>
-            <li>Programar campaña “Día de la Madre”.</li>
-            <li>Etiquetas nuevas para ramos “Deluxe”.</li>
+            {notes.length === 0 && <li className="note-empty">Sin notas por ahora.</li>}
+            {notes.map((n, idx) => (
+              <li key={`${n}-${idx}`}>
+                <span>{n}</span>
+                <button
+                  type="button"
+                  className="note-remove"
+                  onClick={() => handleDeleteNote(idx)}
+                  aria-label="Eliminar nota"
+                >
+                  ×
+                </button>
+              </li>
+            ))}
           </ul>
         </Card>
       </section>
@@ -312,7 +367,7 @@ function Hub() {
         className={btnClass("reports")}
         onClick={() => handleClick("reports", "/reports")}
       >
-        <span className="tile-emoji">📊</span>
+        <span className="tile-emoji">📋</span>
         <span className="tile-title">Informes</span>
         <span className="tile-sub">Informes de ventas</span>
       </button>
