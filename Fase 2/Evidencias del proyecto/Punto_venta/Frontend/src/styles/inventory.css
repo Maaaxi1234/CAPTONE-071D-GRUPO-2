@@ -49,28 +49,6 @@
   margin-bottom: 6px;
 }
 
-.inventory-page .dash-header .palette {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.inventory-page .dash-header .swatch {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  color: rgba(255,255,255,.85);
-}
-
-.inventory-page .dash-header .swatch i {
-  width: 16px;
-  height: 16px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,.4);
-  display: inline-block;
-}
-
 /* CONTROLES DE BARRA */
 
 .inventory-controls {
@@ -104,16 +82,32 @@
 .inventory-controls .chk {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.9rem;
-  color: #fff;
-  font-weight: 600;
+  gap: 10px;
+  font-size: 0.95rem;
+  color: #fefefe;
+  font-weight: 700;
+  background: rgba(255,255,255,0.18);
+  border-radius: 999px;
+  padding: 8px 16px;
+  border: 1px solid rgba(255,255,255,0.5);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: background 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease;
+}
+
+.inventory-controls .chk:hover {
+  background: rgba(255,255,255,0.26);
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.2);
 }
 
 .inventory-controls .chk input {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   accent-color: var(--primary-light);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
 }
 
 .inventory-page .header-actions {
@@ -121,6 +115,25 @@
   gap: 10px;
   flex-wrap: wrap;
   justify-content: flex-end;
+}
+
+.inventory-page .header-actions .btn.solid.accent {
+  padding: 14px 32px;
+  font-size: 1rem;
+  border-radius: 999px;
+  letter-spacing: 0.3px;
+  background: linear-gradient(130deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 16px 32px rgba(6, 95, 70, 0.28);
+}
+
+.inventory-page .header-actions .btn.solid.accent:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 36px rgba(6, 95, 70, 0.32);
+}
+
+.inventory-page .header-actions .btn.solid.accent:active {
+  transform: translateY(0);
+  box-shadow: 0 12px 26px rgba(6, 95, 70, 0.24);
 }
 
 
@@ -272,6 +285,28 @@
 
 .col-head .mini {
   border-radius: 999px;
+  border: 1px solid rgba(6, 95, 70, 0.2);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  background: linear-gradient(135deg, #0f7a4c, #0b6240);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(6, 95, 70, 0.25);
+  transition: transform 0.12s ease, filter 0.18s ease, box-shadow 0.18s ease;
+}
+
+.col-head .mini:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 14px 28px rgba(6, 95, 70, 0.3);
+}
+
+.col-head .mini:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(6, 95, 70, 0.22);
 }
 
 /* COLUMN BODY */
@@ -436,6 +471,31 @@
   gap: 6px;
 }
 
+.pc-actions .btn {
+  padding: 8px 14px;
+  border-radius: 12px;
+  border-color: rgba(15, 122, 76, 0.35);
+  background: rgba(15, 122, 76, 0.06);
+  color: var(--primary-dark);
+  font-weight: 600;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.pc-actions .btn:hover {
+  background: rgba(15, 122, 76, 0.12);
+}
+
+.pc-actions .btn.danger {
+  background: rgba(220, 38, 38, 0.08);
+  border-color: rgba(220, 38, 38, 0.5);
+  color: #b91c1c;
+  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.18);
+}
+
+.pc-actions .btn.danger:hover {
+  background: rgba(220, 38, 38, 0.14);
+}
+
 /* MODAL */
 
 .modal-backdrop {
@@ -489,6 +549,22 @@
   border-radius: 0 0 18px 18px;
 }
 
+.inventory-page .modal-foot .btn.primary {
+  padding: 12px 32px;
+  font-size: 0.95rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 12px 28px rgba(6, 95, 70, 0.3);
+}
+
+.inventory-page .modal-foot .btn.primary:hover {
+  box-shadow: 0 18px 32px rgba(6, 95, 70, 0.35);
+}
+
+.inventory-page .modal-foot .btn.primary:active {
+  box-shadow: 0 8px 18px rgba(6, 95, 70, 0.28);
+}
+
 /* FORM GRID */
 
 .form-grid {
@@ -520,11 +596,55 @@
   align-items: center;
 }
 
+.cat-row .btn.mini {
+  height: 38px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border-color: rgba(15, 122, 76, 0.28);
+  background: rgba(15, 122, 76, 0.08);
+  color: var(--primary-dark);
+  box-shadow: 0 8px 18px rgba(6, 95, 70, 0.15);
+}
+
+.cat-row .btn.mini:hover {
+  background: rgba(15, 122, 76, 0.15);
+}
+
 .inline-create {
   margin-top: 8px;
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+  align-items: center;
+}
+
+.inline-create .inp {
+  flex: 1 1 220px;
+  min-width: 170px;
+}
+
+.inline-create .btn.mini {
+  min-width: 110px;
+}
+
+.inline-create .btn.primary.mini {
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 18px;
+  border-radius: 12px;
+  box-shadow: 0 10px 20px rgba(6, 95, 70, 0.22);
+}
+
+.inline-create .btn.ghost.mini {
+  height: 40px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border-color: rgba(15, 122, 76, 0.25);
+  background: #f1f8f4;
+  color: var(--primary-dark);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.06);
 }
 
 .row {
@@ -539,6 +659,50 @@
 .row input[type="checkbox"] {
   width: 16px;
   height: 16px;
+}
+
+.checkbox-row {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.checkbox-card {
+  flex: 1 1 220px;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel-2);
+  color: var(--text-sec);
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 6px 14px rgba(6, 95, 70, 0.08);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.checkbox-card span {
+  line-height: 1.2;
+}
+
+.checkbox-card input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+}
+
+.checkbox-card input[type="checkbox"]:checked + span {
+  color: var(--primary-dark);
+  font-weight: 600;
+}
+
+.checkbox-card:focus-within {
+  border-color: var(--primary-light);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+  background: #ffffff;
 }
 
 /* LOADING */

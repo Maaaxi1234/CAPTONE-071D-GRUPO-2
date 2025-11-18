@@ -3,14 +3,6 @@ import { Link } from "react-router-dom";
 import api, { API_BASE } from "../services/api";
 import "../styles/inventory.css";
 
-const PALETTE = [
-  { tone: "Bosque", value: "#065f46" },
-  { tone: "Selva", value: "#0f7a4c" },
-  { tone: "Hoja", value: "#4ade80" },
-  { tone: "Arena", value: "#fbbf24" },
-  { tone: "Nieve", value: "#ffffff" },
-];
-
 export default function Inventario() {
   const [loading, setLoading] = useState(true);
   const [categories, setCategories] = useState([]);
@@ -180,10 +172,12 @@ export default function Inventario() {
   async function adjStock(p, delta) {
     try {
       const newStock = Math.max(0, (Number(p.stock) || 0) + delta);
-      const { data } = await api.patch(`/api/products/${p.id}/`, {
-        stock: newStock,
-        category_id: p.category?.id ?? p.category,
-      });
+      const fd = new FormData();
+      fd.append("stock", String(newStock));
+      if (p.category?.id ?? p.category) {
+        fd.append("category_id", p.category?.id ?? p.category);
+      }
+      const { data } = await api.patch(`/api/products/${p.id}/`, fd);
       setProducts((prev) => prev.map((x) => (x.id === p.id ? data : x)));
     } catch {
       alert("No se pudo actualizar el stock.");
@@ -212,14 +206,6 @@ export default function Inventario() {
           <div>
             <h1 className="brand-title">Inventario</h1>
             <div className="brand-sub">Plantas y accesorios</div>
-            <div className="palette">
-              {PALETTE.map((tone) => (
-                <span key={tone.tone} className="swatch">
-                  <i style={{ background: tone.value }} />
-                  {tone.tone}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
         <div className="inventory-controls">
@@ -258,7 +244,7 @@ export default function Inventario() {
                 <div className="title">{category.name}</div>
                 <div className="count">{items.length}</div>
                 <button className="mini" onClick={() => openCreate(category.id)}>
-                  ＋
+                  +
                 </button>
               </div>
 
@@ -434,23 +420,25 @@ export default function Inventario() {
                   ) : null}
                 </label>
 
-                <label className="row">
-                  <input
-                    type="checkbox"
-                    checked={form.track}
-                    onChange={(e) => setForm({ ...form, track: e.target.checked })}
-                  />
-                  Rastrear inventario
-                </label>
+                <div className="checkbox-row">
+                  <label className="checkbox-card">
+                    <input
+                      type="checkbox"
+                      checked={form.track}
+                      onChange={(e) => setForm({ ...form, track: e.target.checked })}
+                    />
+                    <span>Rastrear inventario</span>
+                  </label>
 
-                <label className="row">
-                  <input
-                    type="checkbox"
-                    checked={form.tax19}
-                    onChange={(e) => setForm({ ...form, tax19: e.target.checked })}
-                  />
-                  Impuesto 19% IVA
-                </label>
+                  <label className="checkbox-card">
+                    <input
+                      type="checkbox"
+                      checked={form.tax19}
+                      onChange={(e) => setForm({ ...form, tax19: e.target.checked })}
+                    />
+                    <span>Impuesto 19% IVA</span>
+                  </label>
+                </div>
               </div>
             </div>
 
