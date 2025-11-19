@@ -142,7 +142,23 @@ export default function OrderDetail() {
                     <div className="td" style={{ textAlign: "center", fontWeight: 600 }}>
                       {item.quantity}
                     </div>
-                    <div className="td" style={{ textAlign: "center" }}>{formatCLP(item.price)}</div>
+                    <div className="td" style={{ textAlign: "center" }}>
+                      {item.discount_pct ? (
+                        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                          <span style={{ textDecoration: "line-through", color: "#6b7280", fontSize: 12 }}>
+                            {formatCLP(item.price_base || item.price)}
+                          </span>
+                          <span style={{ color: "#dc2626", fontWeight: 700 }}>
+                            {formatCLP(item.price)}
+                          </span>
+                          <span style={{ fontSize: 12, color: "#047857", fontWeight: 600 }}>
+                            -{item.discount_pct}%
+                          </span>
+                        </div>
+                      ) : (
+                        formatCLP(item.price)
+                      )}
+                    </div>
                     <div className="td" style={{ textAlign: "center" }}>{formatCLP(item.line_total)}</div>
                   </div>
                 ))}

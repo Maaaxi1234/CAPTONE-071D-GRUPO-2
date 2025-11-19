@@ -68,6 +68,10 @@ export default function Ticket({ order = {}, autoPrint = false }) {
     if (it.line_total != null && qty > 0) return Number(it.line_total) / qty;
     return 0;
   };
+  const baseFrom = (it, unit) => {
+    if (it.price_base != null) return Number(it.price_base);
+    return unit;
+  };
 
   useEffect(() => {
     if (autoPrint) {
@@ -115,9 +119,11 @@ export default function Ticket({ order = {}, autoPrint = false }) {
         {(order.items || []).map((it, i) => {
           const qty = Number(it.quantity || 0);
           const unit = unitFrom(it);
+          const base = baseFrom(it, unit);
           const line = Number(it.line_total != null ? it.line_total : unit * qty);
           const name = it.product || it.name || it.title || "Producto";
           const sku = it.sku ? ` (${it.sku})` : "";
+          const hasDiscount = Number(it.discount_pct || 0) > 0 && base > unit;
           return (
             <div key={i} className="t-row">
               <div className="c-cant">{qty}</div>
@@ -125,7 +131,17 @@ export default function Ticket({ order = {}, autoPrint = false }) {
                 {name}
                 {sku}
               </div>
-              <div className="c-val">{CLP(unit)}</div>
+              <div className="c-val">
+                {hasDiscount ? (
+                  <>
+                    <span className="t-price-old">{CLP(base)}</span>
+                    <span className="t-price-new">{CLP(unit)}</span>
+                    <span className="t-price-badge">-{it.discount_pct}%</span>
+                  </>
+                ) : (
+                  CLP(unit)
+                )}
+              </div>
               <div className="c-sub">{CLP(line)}</div>
             </div>
           );

@@ -113,3 +113,23 @@ if DEBUG and not CORS_ALLOWED_ORIGINS:
 BASE_DIR = Path(__file__).resolve().parent.parent
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+# Email / alert defaults
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "plantitasdondelafran@gmail.com")
+_raw_alerts = os.getenv(
+    "ALERTAS_EMAIL_TO",
+    "ronisaavedra777@gmail.com,b.medina@duocuc.cl,max.pinoc@duocuc.cl",
+)
+ALERTAS_EMAIL_TO = [addr.strip() for addr in _raw_alerts.split(",") if addr.strip()]
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "plantitasdondelafran@gmail.com")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "hbhq kvbv afye ghwo")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True").lower() == "true"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() == "true"
+
+
+
+
+
+

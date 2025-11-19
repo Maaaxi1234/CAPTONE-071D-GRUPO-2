@@ -34,6 +34,7 @@ services:
       DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
       DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
       DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      ALERTAS_EMAIL_TO: ${ALERTAS_EMAIL_TO}
     depends_on:
       db:
         condition: service_healthy
@@ -47,6 +48,36 @@ services:
       "
     volumes:
       - ./Backend:/app
+
+  alerts_scheduler:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    environment:
+      DJANGO_DEBUG: ${DJANGO_DEBUG}
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_HOST: ${DB_HOST}
+      DB_PORT: ${DB_PORT}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      DJANGO_SUPERUSER_USERNAME: ${DJANGO_SUPERUSER_USERNAME}
+      DJANGO_SUPERUSER_EMAIL: ${DJANGO_SUPERUSER_EMAIL}
+      DJANGO_SUPERUSER_PASSWORD: ${DJANGO_SUPERUSER_PASSWORD}
+      ALERTAS_EMAIL_TO: ${ALERTAS_EMAIL_TO}
+    depends_on:
+      - backend
+    volumes:
+      - ./Backend:/app
+    command: >
+      sh -c "
+        while true; do
+          python manage.py send_alert_emails;
+          sleep 60;
+        done
+      "
 
   frontend:
     build:
@@ -65,3 +96,4 @@ services:
 
 volumes:
   dbdata:
+

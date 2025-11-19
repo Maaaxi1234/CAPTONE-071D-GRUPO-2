@@ -89,6 +89,24 @@
   border-bottom: 1px dashed #D0D0D0;
 }
 .ticket .t-table .t-row:last-child { border-bottom: 0; }
+.t-price-old {
+  text-decoration: line-through;
+  color: #6b7280;
+  font-size: 10px;
+  display: block;
+}
+.t-price-new {
+  color: #b91c1c;
+  font-weight: 700;
+  font-size: 12px;
+  display: block;
+}
+.t-price-badge {
+  color: #047857;
+  font-size: 10px;
+  font-weight: 700;
+  display: block;
+}
 
 /* ===== Totales ===== */
 .ticket .t-totals {

@@ -31,7 +31,19 @@ export default function CartDrawer({ open, onClose, onCheckout }) {
                 />
                 <button className="btn tiny" onClick={() => setQty(it.id, it.qty + 1)}>+</button>
               </div>
-              <div className="cart-price">{formatCLP(it.qty * it.price)}</div>
+              <div className="cart-price">
+                {formatCLP(it.qty * it.price)}
+                {it.discount_pct ? (
+                  <div
+                    style={{
+                      fontSize: "0.75rem",
+                      color: "rgba(0,0,0,0.5)",
+                    }}
+                  >
+                    -{it.discount_pct}% de {formatCLP(it.basePrice || it.price)}
+                  </div>
+                ) : null}
+              </div>
               <button className="btn tiny ghost" onClick={() => remove(it.id)}>✕</button>
             </div>
           ))

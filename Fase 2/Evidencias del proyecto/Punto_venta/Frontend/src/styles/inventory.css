@@ -117,6 +117,86 @@
   justify-content: flex-end;
 }
 
+.alert-panel .card-body {
+  display: grid;
+  gap: 10px;
+}
+
+.alert-list {
+  display: grid;
+  gap: 8px;
+}
+
+.alert-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+}
+
+.alert-item .meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.alert-item .type {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.alert-item .message {
+  color: var(--text-sec);
+  font-size: 0.85rem;
+}
+
+.product-alert-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.product-alert-badges .badge {
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(220, 38, 38, 0.15);
+  color: #b91c1c;
+}
+
+.product-alert-badges .badge-riego {
+  background: rgba(251, 191, 36, 0.25);
+  color: #92400e;
+}
+
+.care-info {
+  margin-top: 8px;
+  display: grid;
+  gap: 2px;
+  font-size: 0.78rem;
+  color: var(--text-sec);
+}
+
+.care-actions {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.78rem;
+  color: var(--text-sec);
+}
+
+.care-water {
+  background: linear-gradient(135deg, var(--primary-light), #22c55e);
+  color: #0f2b20;
+}
+
 .inventory-page .header-actions .btn.solid.accent {
   padding: 14px 32px;
   font-size: 1rem;
@@ -241,21 +321,19 @@
 
 .inv-board {
   display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: minmax(260px, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 16px;
-  overflow-x: auto;
   padding-bottom: 4px;
 }
 
-.inv-col {
+ .inv-col {
   background: var(--panel);
   border-radius: 16px;
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - 160px);
-  min-width: 260px;
+  min-height: 320px;
+  height: 100%;
 }
 
 .col-head {
@@ -327,6 +405,74 @@
   border-radius: 12px;
   background: #f8fbf9;
   border: 1px dashed var(--border);
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.inventory-table th {
+  text-align: left;
+  padding: 8px;
+  background: var(--panel-2);
+  color: var(--text-sec);
+  font-weight: 600;
+}
+
+.inventory-table td {
+  border-top: 1px solid var(--border);
+  padding: 8px;
+  vertical-align: top;
+}
+
+.row-name {
+  display: flex;
+  gap: 10px;
+}
+
+.row-img {
+  width: 50px;
+  height: 50px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #edf7f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px dashed var(--border);
+}
+
+.row-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.row-info .pc-name {
+  font-weight: 600;
+}
+
+.row-info .pc-sub {
+  font-size: 0.75rem;
+  color: var(--text-sec);
+}
+
+.stock-cell {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.cell-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 /* PRODUCT CARD */
@@ -406,6 +552,10 @@
 .pc-info .price {
   font-weight: 700;
   color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
 .pc-info .tax {
@@ -419,6 +569,34 @@
 
 .pc-info .stock strong {
   color: var(--primary);
+}
+
+.price-old {
+  text-decoration: line-through;
+  color: var(--text-sec);
+  font-size: 0.8rem;
+}
+
+.price-new {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--error);
+}
+
+.discount-chip {
+  background: var(--primary-dark);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.alert-discounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
 }
 
 /* STOCK BUTTONS */

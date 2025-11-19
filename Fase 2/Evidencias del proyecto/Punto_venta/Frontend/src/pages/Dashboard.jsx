@@ -24,6 +24,7 @@ export default function Dashboard() {
   const [ventas7, setVentas7] = useState([]);
   const [topProductos, setTopProductos] = useState([]);
   const [lowStock, setLowStock] = useState([]);
+  const [alertas, setAlertas] = useState([]);
   const [notes, setNotes] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(NOTE_KEY) || "[]");
@@ -52,8 +53,11 @@ export default function Dashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const { data: orders } = await api.get("/api/orders/list/");
-        const { data: products } = await api.get("/api/products/");
+        const [{ data: orders }, { data: products }, { data: alertsData }] = await Promise.all([
+          api.get("/api/orders/list/"),
+          api.get("/api/products/"),
+          api.get("/api/alerts/?resuelta=false"),
+        ]);
 
         const now = new Date();
         const hoy = ymd(now);
@@ -111,6 +115,7 @@ export default function Dashboard() {
         setLowStock(low);
         setTopProductos(top);
         setVentas7(serie);
+        setAlertas(Array.isArray(alertsData) ? alertsData : []);
       } catch (err) {
         console.error("Error cargando datos del dashboard:", err);
       }
@@ -136,6 +141,11 @@ export default function Dashboard() {
   }
 
   // ===== Render =====
+  const alertasRiego = alertas.filter((a) => a.tipo === "RIEGO");
+  const alertasOfertaVida = alertas.filter((a) =>
+    ["SOBRESTOCK", "VIDA_UTIL"].includes(a.tipo)
+  );
+
   return (
     <div className="page page-plantitas dashboard-page">
       {/* Header */}
@@ -220,6 +230,40 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
+        </Card>
+      </section>
+
+      {/* Alertas clave */}
+      <section className="grid two">
+        <Card title="Problemas de riego">
+          {alertasRiego.length === 0 ? (
+            <div className="muted">Sin alertas de riego.</div>
+          ) : (
+            <Table
+              columns={["Producto", "Mensaje", "Nivel"]}
+              rows={alertasRiego.map((a) => [
+                a.producto?.name || "—",
+                a.mensaje,
+                a.nivel,
+              ])}
+            />
+          )}
+        </Card>
+
+        <Card title="Sugerencias de oferta">
+          {alertasOfertaVida.length === 0 ? (
+            <div className="muted">Sin alertas de sobrestock o vida útil.</div>
+          ) : (
+            <Table
+              columns={["Producto", "Mensaje", "Nivel", "Tipo"]}
+              rows={alertasOfertaVida.map((a) => [
+                a.producto?.name || "—",
+                a.mensaje,
+                a.nivel,
+                a.tipo,
+              ])}
+            />
+          )}
         </Card>
       </section>
     </div>

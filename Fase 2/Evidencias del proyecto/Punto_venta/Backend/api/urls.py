@@ -3,11 +3,12 @@ from django.urls import path
 from .views import (
     MeView,
     CategoryListCreateView, CategoryDetailView,
-    ProductListCreateView, ProductDetailView,
+    ProductListCreateView, ProductDetailView, ProductWaterView, ProductExtendLifeView,
     OrderCreateView, OrderListView, OrderDetailView,
     KPIOverview, KPITopProductos, KPIMesMayorVenta, VentasPorMes,
     VentasPorCategoria, MediosDePago, PromedioVentaDiaria,
-    ExportExcelView, ExportPDFView, ReportQueryView, 
+    ExportExcelView, ExportPDFView, ReportQueryView,
+    AlertListView, PlantCareListView,
 )
 
 urlpatterns = [
@@ -19,6 +20,8 @@ urlpatterns = [
     # Productos (IDs alfanuméricos -> usar <str:pk>)
     path("products/", ProductListCreateView.as_view()),
     path("products/<str:pk>/", ProductDetailView.as_view()),   # <= aquí el cambio
+    path("products/<str:pk>/regar/", ProductWaterView.as_view()),
+    path("products/<str:pk>/extender-vida/", ProductExtendLifeView.as_view()),
 
     # Órdenes (IDs enteros)
     path("orders/", OrderCreateView.as_view()),
@@ -36,4 +39,7 @@ urlpatterns = [
     path("kpi/export-excel/", ExportExcelView.as_view()),
     path("kpi/export-pdf/",   ExportPDFView.as_view()),
     path("reportes/query/", ReportQueryView.as_view(), name="report-query"),
+
+    path("alerts/", AlertListView.as_view()),
+    path("cuidados/", PlantCareListView.as_view()),
 ]

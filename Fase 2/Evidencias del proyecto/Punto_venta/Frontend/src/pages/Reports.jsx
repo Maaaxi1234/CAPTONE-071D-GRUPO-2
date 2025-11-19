@@ -290,19 +290,19 @@ export default function Reports() {
           </div>
           <div className="card-body" style={{ height: 320 }}>
             <ResponsiveContainer>
-              <PieChart>
-                <Tooltip formatter={(v, _n, p) => [`${v}`, p?.payload?.label]} />
-                <Legend verticalAlign="bottom" />
+                <PieChart>
+                 <Tooltip formatter={(v, _n, p) => [`${v} (${p?.payload?.porcentaje ?? 0}%)`, p?.payload?.label]} />
+                 <Legend verticalAlign="bottom" />
                 <Pie
                   data={medios}
                   dataKey="value"
                   nameKey="label"
-                  label={({ name, value, percent }) =>
-                    `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                  label={({ name, value, percent, payload }) =>
+                    `${name}: ${value} (${payload?.porcentaje ?? (percent * 100).toFixed(0)}%)`
                   }
-                  labelLine
-                  outerRadius="80%"
-                >
+                 labelLine
+                 outerRadius="80%"
+               >
                   {medios.map((_, i) => (
                     <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
                   ))}

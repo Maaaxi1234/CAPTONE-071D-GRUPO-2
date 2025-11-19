@@ -31,12 +31,14 @@ export default function Shop() {
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return products.filter((p) => {
-      const matchCat = catId ? (p.category?.id ?? p.category) === catId : true;
-      const name = (p.name || "").toLowerCase();
-      const sku = (p.sku || "").toLowerCase();
-      return matchCat && (!q || name.includes(q) || sku.includes(q));
-    });
+    return products
+      .filter((p) => (Number(p.stock) || 0) > 0)
+      .filter((p) => {
+        const matchCat = catId ? (p.category?.id ?? p.category) === catId : true;
+        const name = (p.name || "").toLowerCase();
+        const sku = (p.sku || "").toLowerCase();
+        return matchCat && (!q || name.includes(q) || sku.includes(q));
+      });
   }, [products, query, catId]);
 
   // ===== Carrito =====
@@ -47,6 +49,7 @@ export default function Shop() {
   const tax = Math.max(0, total - neto);
 
   function addToCart(prod) {
+    const unit = prod.price_discounted ?? prod.price;
     setCart((c) => {
       const i = c.findIndex((x) => x.id === prod.id);
       if (i >= 0) {
@@ -54,7 +57,17 @@ export default function Shop() {
         copy[i] = { ...copy[i], qty: copy[i].qty + 1 };
         return copy;
       }
-      return [...c, { id: prod.id, name: prod.name, price: prod.price, qty: 1 }];
+      return [
+        ...c,
+        {
+          id: prod.id,
+          name: prod.name,
+          price: unit,
+          qty: 1,
+          discount_pct: prod.discount_pct || 0,
+          basePrice: prod.price,
+        },
+      ];
     });
   }
   function decQty(id) {
@@ -109,7 +122,16 @@ export default function Shop() {
                   <button onClick={() => incQty(l.id)}>+</button>
                 </div>
                 <span className="x">×</span>
-                <span className="unit">{formatCLP(l.price)}</span>
+                <span className="unit cart-price-block">
+                  {l.discount_pct ? (
+                    <>
+                      <span className="price-old">{formatCLP(l.basePrice || l.price)}</span>
+                      <span className="price-new">{formatCLP(l.price)}</span>
+                    </>
+                  ) : (
+                    formatCLP(l.price)
+                  )}
+                </span>
                 <span className="grow" />
                 <strong>{formatCLP(l.price * l.qty)}</strong>
               </div>
@@ -185,18 +207,32 @@ export default function Shop() {
         </div>
 
         <div className="grid-products">
-          {filtered.map((p) => (
-            <button key={p.id} className="prod" onClick={() => addToCart(p)}>
-              <div className="pic">
-                <img
-                  src={p.image?.startsWith("http") ? p.image : `${API_BASE}${p.image}`}
-                  alt={p.name}
-                />
-              </div>
-              <div className="pname">{p.name}</div>
-              <div className="pprice">{formatCLP(p.price)}</div>
-            </button>
-          ))}
+          {filtered.map((p) => {
+            const hasDiscount = Number(p.discount_pct || 0) > 0;
+            const priceFinal = p.price_discounted ?? p.price;
+            return (
+              <button key={p.id} className="prod" onClick={() => addToCart(p)}>
+                <div className="pic">
+                  <img
+                    src={p.image?.startsWith("http") ? p.image : `${API_BASE}${p.image}`}
+                    alt={p.name}
+                  />
+                  {hasDiscount && <span className="discount-flag">-{p.discount_pct}%</span>}
+                </div>
+                <div className="pname">{p.name}</div>
+                <div className="pprice">
+                  {hasDiscount ? (
+                    <>
+                      <span className="price-old">{formatCLP(p.price)}</span>
+                      <span className="price-new">{formatCLP(priceFinal)}</span>
+                    </>
+                  ) : (
+                    formatCLP(priceFinal)
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </main>
 
