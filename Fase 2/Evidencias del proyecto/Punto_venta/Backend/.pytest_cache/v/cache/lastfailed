@@ -1,5 +1,0 @@
-{
-  "test_create_products_selenium.py": true,
-  "test_login_selenium.py": true,
-  "test_pos_selenium.py": true
-}
