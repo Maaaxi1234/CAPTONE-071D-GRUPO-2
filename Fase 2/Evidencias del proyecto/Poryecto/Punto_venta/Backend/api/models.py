@@ -33,6 +33,11 @@ class Product(models.Model):
     frecuencia_riego_dias = models.PositiveIntegerField(null=True, blank=True)
     vida_util_dias = models.PositiveIntegerField(null=True, blank=True)
     sensibilidad_climatica = models.CharField(max_length=10, choices=SENSIBILIDAD_CHOICES, null=True, blank=True)
+    sensibilidad_calor = models.CharField(max_length=10, choices=SENSIBILIDAD_CHOICES, null=True, blank=True)
+    sensibilidad_frio = models.CharField(max_length=10, choices=SENSIBILIDAD_CHOICES, null=True, blank=True)
+    temp_max_segura = models.FloatField(null=True, blank=True)
+    temp_min_segura = models.FloatField(null=True, blank=True)
+    requiere_alerta_calor = models.BooleanField(default=False)
     fecha_ingreso = models.DateTimeField(default=timezone.now)
     ultima_fecha_riego = models.DateTimeField(null=True, blank=True)
     discount_pct = models.PositiveIntegerField(
@@ -132,6 +137,8 @@ class Alert(models.Model):
         ("VIDA_UTIL", "Vida útil excedida"),
         ("SOBRESTOCK", "Sobrestock / sin rotación"),
         ("RIESGO_ALTO", "Riesgo climático alto"),
+        ("CALOR", "Temperatura alta"),
+        ("FRIO", "Temperatura baja"),
     ]
     NIVEL_CHOICES = [
         ("INFO", "Información"),

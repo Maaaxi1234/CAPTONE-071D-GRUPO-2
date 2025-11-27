@@ -39,7 +39,7 @@ from .serializers import (
     AlertSerializer,
     PlantCareSerializer,
 )
-from .alerts import evaluar_alertas_producto
+from .alerts import evaluar_alertas_producto, evaluar_alertas_pendientes
 
 PAID = {"status": "paid"}
 
@@ -151,8 +151,6 @@ class ProductExtendLifeView(APIView):
         pendientes_sobrestock = list(
             producto.alertas.filter(tipo="SOBRESTOCK", resuelta=False).values("mensaje", "nivel")
         )
-        producto.fecha_ingreso = timezone.now()
-        producto.save(update_fields=["fecha_ingreso"])
         PlantCare.objects.create(
             producto=producto,
             tipo_accion="EXTENDER_VIDA",
@@ -178,7 +176,7 @@ class ProductExtendLifeView(APIView):
                 mensaje=data.get("mensaje", f"'{producto.name}' lleva demasiado tiempo en vitrina."),
                 nivel=data.get("nivel", "ADVERTENCIA"),
             )
-        return Response({"detail": "Vida útil reiniciada para este producto."}, status=201)
+        return Response(ProductSerializer(producto, context={"request": request}).data, status=200)
 
 
 class AlertListView(generics.ListAPIView):
@@ -189,6 +187,8 @@ class AlertListView(generics.ListAPIView):
     search_fields = ["mensaje", "producto__name", "producto__sku"]
 
     def get_queryset(self):
+        # Recalcula alertas para evitar depender de acciones manuales recientes.
+        evaluar_alertas_pendientes()
         qs = super().get_queryset()
         tipo = self.request.query_params.get("tipo")
         resuelta = self.request.query_params.get("resuelta")

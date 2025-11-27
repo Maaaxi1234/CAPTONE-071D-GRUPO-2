@@ -4,13 +4,26 @@ import { useNavigate } from "react-router-dom";
 import api, { API_BASE } from "../services/api";
 import "../styles/shop.css";
 
-// ✅ Modal de cierre de caja (arqueo)
+// Modal de cierre de caja (arqueo)
 import CloseCashModal from "../components/CloseCashModal";
+
+function catIcon(name = "") {
+  const n = name.toLowerCase();
+  if (n.includes("cactus")) return "🌵";
+  if (n.includes("suc") || n.includes("sucu")) return "🌱";
+  if (n.includes("trop") || n.includes("jungle")) return "🌴";
+  if (n.includes("flor")) return "🌸";
+  if (n.includes("maceta") || n.includes("maceter")) return "🪴";
+  if (n.includes("tierra") || n.includes("sustrato")) return "🧱";
+  if (n.includes("fertiliz") || n.includes("abono")) return "🧪";
+  if (n.includes("interior")) return "🏠";
+  if (n.includes("exterior")) return "🌞";
+  return "🏷️";
+}
 
 export default function Shop() {
   const navigate = useNavigate();
 
-  // ===== Datos desde backend (categorías y productos) =====
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
 
@@ -73,9 +86,7 @@ export default function Shop() {
   function decQty(id) {
     setCart((c) =>
       c
-        .map((l) =>
-          l.id === id ? { ...l, qty: Math.max(0, l.qty - 1) } : l
-        )
+        .map((l) => (l.id === id ? { ...l, qty: Math.max(0, l.qty - 1) } : l))
         .filter((l) => l.qty > 0)
     );
   }
@@ -88,10 +99,9 @@ export default function Shop() {
 
   function pay() {
     if (!cart.length) return;
-    // Guarda info mínima para pantalla de pago
     sessionStorage.setItem("pos_cart", JSON.stringify(cart));
     sessionStorage.setItem("pos_totals", JSON.stringify({ neto, tax, total }));
-    navigate("/shop/success"); // pantalla de método de pago
+    navigate("/shop/success");
   }
 
   // ===== Modal de arqueo/cierre =====
@@ -155,10 +165,7 @@ export default function Shop() {
         </div>
 
         <div className="paybar single">
-          <button
-            className={`pay ${cart.length ? "" : "disabled"}`}
-            onClick={pay}
-          >
+          <button className={`pay ${cart.length ? "" : "disabled"}`} onClick={pay}>
             Pagar
           </button>
         </div>
@@ -175,17 +182,10 @@ export default function Shop() {
             onChange={(e) => setQuery(e.target.value)}
           />
 
-          {/* Botones a la derecha */}
           <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-            {/* Volver al Dashboard */}
-            <button
-              className="btn ghost"
-              onClick={() => navigate("/")}
-              title="Volver al panel"
-            >
+            <button className="btn ghost" onClick={() => navigate("/")} title="Volver al panel">
               Volver al panel
             </button>
-            {/* Cierre de caja */}
             <button className="btn primary" onClick={() => setShowClose(true)}>
               Cierre de caja
             </button>
@@ -200,7 +200,7 @@ export default function Shop() {
               onClick={() => setCatId((prev) => (prev === c.id ? null : c.id))}
               title={c.name}
             >
-              <span className="cat-ic">🪴</span>
+              <span className="cat-ic">{catIcon(c.name)}</span>
               <span className="cat-tx">{c.name}</span>
             </button>
           ))}
@@ -213,10 +213,7 @@ export default function Shop() {
             return (
               <button key={p.id} className="prod" onClick={() => addToCart(p)}>
                 <div className="pic">
-                  <img
-                    src={p.image?.startsWith("http") ? p.image : `${API_BASE}${p.image}`}
-                    alt={p.name}
-                  />
+                  <img src={p.image?.startsWith("http") ? p.image : `${API_BASE}${p.image}`} alt={p.name} />
                   {hasDiscount && <span className="discount-flag">-{p.discount_pct}%</span>}
                 </div>
                 <div className="pname">{p.name}</div>
@@ -236,16 +233,14 @@ export default function Shop() {
         </div>
       </main>
 
-      {/* Modal de cierre de caja */}
       <CloseCashModal
-  open={showClose}
-  onClose={() => setShowClose(false)}
-  onClosed={() => {
-    setShowClose(false);
-    navigate("/cash/open");   // ⬅️ abrir caja de inmediato
-  }}
-/>
-
+        open={showClose}
+        onClose={() => setShowClose(false)}
+        onClosed={() => {
+          setShowClose(false);
+          navigate("/cash/open");
+        }}
+      />
     </div>
   );
 }

@@ -6,8 +6,8 @@ import "../styles/dashboard.css";
 
 const NOTE_KEY = "dashboard_notes";
 const DEFAULT_NOTES = [
-  "Revisar proveedor de rosas (precio subiÃ³ 4%).",
-  "Programar campaÃ±a DÃ­a de la Madre.",
+  "Revisar proveedor de rosas (precio subió 4%).",
+  "Programar campaña Día de la Madre.",
   "Etiquetas nuevas para ramos Deluxe.",
 ];
 
@@ -25,7 +25,6 @@ export default function Dashboard() {
   const [topProductos, setTopProductos] = useState([]);
   const [lowStock, setLowStock] = useState([]);
   const [alertas, setAlertas] = useState([]);
-  const [tempActual, setTempActual] = useState(null);
   const [notes, setNotes] = useState(() => {
     try {
       const stored = JSON.parse(localStorage.getItem(NOTE_KEY) || "[]");
@@ -36,7 +35,7 @@ export default function Dashboard() {
   });
   const [noteInput, setNoteInput] = useState("");
 
-  // ===== ConfiguraciÃ³n de zona horaria =====
+  // ===== Configuración de zona horaria =====
   const TZ = "America/Santiago";
   const ymd = (d) => new Intl.DateTimeFormat("sv-SE", { timeZone: TZ }).format(d);
   const parseCreatedAt = (s) => {
@@ -49,7 +48,7 @@ export default function Dashboard() {
       .replace(".", "")
       .replace(/^./, (c) => c.toUpperCase());
 
-  // ===== LÃ³gica principal =====
+  // ===== Lógica principal =====
   useEffect(() => {
     async function fetchData() {
       try {
@@ -63,7 +62,7 @@ export default function Dashboard() {
         const hoy = ymd(now);
         const orderDay = (o) => ymd(parseCreatedAt(o.created_at));
 
-        // Ventas del dÃ­a y tickets
+        // Ventas del día y tickets
         const ordersHoy = orders.filter((o) => orderDay(o) === hoy);
         const ventasHoy = ordersHoy.reduce((acc, o) => acc + Number(o.total || 0), 0);
         const ticketsHoy = ordersHoy.length;
@@ -87,7 +86,7 @@ export default function Dashboard() {
           .sort((a, b) => b.ingreso - a.ingreso)
           .slice(0, 5);
 
-        // Ventas Ãºltimos 7 dÃ­as
+        // Ventas últimos 7 días
         const dias = Array.from({ length: 7 }, (_, i) => {
           const d = new Date(now);
           d.setDate(d.getDate() - (6 - i));
@@ -114,29 +113,11 @@ export default function Dashboard() {
     }
 
     fetchData();
-    const id = setInterval(fetchData, 30 * 60 * 1000); // refresca cada 30 minutos
-    return () => clearInterval(id);
   }, []);
 
   useEffect(() => {
     localStorage.setItem(NOTE_KEY, JSON.stringify(notes));
   }, [notes]);
-
-  useEffect(() => {
-    async function fetchTemp() {
-      try {
-        const resp = await fetch(
-          "https://api.open-meteo.com/v1/forecast?latitude=-33.45&longitude=-70.66&current=temperature_2m"
-        );
-        const data = await resp.json();
-        const t = data?.current?.temperature_2m;
-        if (typeof t === "number") setTempActual(t);
-      } catch {
-        /* ignore */
-      }
-    }
-    fetchTemp();
-  }, []);
 
   function handleAddNote(e) {
     e.preventDefault();
@@ -156,9 +137,9 @@ export default function Dashboard() {
   const alertasClima = alertas.filter((a) => ["CALOR", "FRIO"].includes(a.tipo));
 
   const parseTemps = (msg = "") => {
-    const matches = msg.match(/-?\d+(?:\.\d+)?\s*Â°C/gi);
+    const matches = msg.match(/-?\d+(?:\.\d+)?\s*°C/gi);
     if (!matches || matches.length === 0) return { temp: null, limite: null };
-    const toNum = (s) => parseFloat(s.replace(/Â°C/i, "").trim());
+    const toNum = (s) => parseFloat(s.replace(/°C/i, "").trim());
     const temp = toNum(matches[0]);
     const limite = matches.length > 1 ? toNum(matches[1]) : null;
     return { temp, limite };
@@ -177,7 +158,7 @@ export default function Dashboard() {
         </div>
         <div className="header-actions">
           <button className="btn ghost" onClick={logout}>
-            Cerrar sesiÃ³n
+            Cerrar sesión
           </button>
         </div>
       </header>
@@ -192,7 +173,7 @@ export default function Dashboard() {
 
       {/* 3 columnas */}
       <section className="main-grid">
-        <Card title="Ventas Ãºltimos 7 dÃ­as">
+        <Card title="Ventas últimos 7 días">
           <Bars data={ventas7} dayLabel={dayLabel} />
         </Card>
 
@@ -206,53 +187,6 @@ export default function Dashboard() {
               columns={["Producto", "Mensaje", "Nivel"]}
               headerClasses={["", "", "th-alert"]}
               rows={alertasRiego.map((a) => [a.producto?.name || "-", a.mensaje, a.nivel])}
-            />
-          )}
-        </Card>
-      </section>
-
-      {/* Alertas de clima */}
-      <section className="grid one">
-        <Card title="Alertas de clima">
-          {alertasClima.length === 0 ? (
-            <div className="muted">Sin alertas de temperatura.</div>
-          ) : (
-            <Table
-              columns={["Tipo", "Planta", "Temp actual", "LÃ­mite", "Nivel", "Mensaje"]}
-              widths={["0.8fr", "1.2fr", "0.9fr", "0.9fr", "0.7fr", "2fr"]}
-              headerClasses={["", "", "", "", "th-alert", ""]}
-              rows={alertasClima.map((a) => [
-                a.tipo,
-                a.producto?.name || "-",
-                (() => {
-                  if (typeof tempActual === "number") return `${tempActual.toFixed(1)}Â°C`;
-                  const { temp } = parseTemps(a.mensaje || "");
-                  return temp != null ? `${temp}Â°C` : "--";
-                })(),
-                (() => {
-                  const lim =
-                    a.producto?.temp_max_segura ??
-                    a.producto?.temp_min_segura ??
-                    parseTemps(a.mensaje || "").limite;
-                  return lim != null ? `${lim}Â°C` : "--";
-                })(),
-                a.nivel,
-                (() => {
-                  const lim =
-                    a.producto?.temp_max_segura ??
-                    a.producto?.temp_min_segura ??
-                    parseTemps(a.mensaje || "").limite;
-                  const tempShown =
-                    typeof tempActual === "number"
-                      ? `${tempActual.toFixed(1)}Â°C`
-                      : (() => {
-                          const { temp } = parseTemps(a.mensaje || "");
-                          return temp != null ? `${temp}Â°C` : "--";
-                        })();
-                  const limTxt = lim != null ? `${lim}Â°C` : "--";
-                  return `Temperatura actual ${tempShown}; lÃ­mite seguro ${limTxt}.`;
-                })(),
-              ])}
             />
           )}
         </Card>
@@ -288,11 +222,40 @@ export default function Dashboard() {
                   onClick={() => handleDeleteNote(idx)}
                   aria-label="Eliminar nota"
                 >
-                  Ã—
+                  ×
                 </button>
               </li>
             ))}
           </ul>
+        </Card>
+      </section>
+
+      {/* Alertas de clima */}
+      <section className="grid one">
+        <Card title="Alertas de clima">
+          {alertasClima.length === 0 ? (
+            <div className="muted">Sin alertas de temperatura.</div>
+          ) : (
+            <Table
+              columns={["Tipo", "Planta", "Temp actual", "Límite", "Nivel", "Mensaje"]}
+              widths={["0.8fr", "1.2fr", "0.9fr", "0.9fr", "0.7fr", "2fr"]}
+              headerClasses={["", "", "", "", "th-alert", ""]}
+              rows={alertasClima.map((a) => [
+                a.tipo,
+                a.producto?.name || "-",
+                (() => {
+                  const { temp } = parseTemps(a.mensaje || "");
+                  return temp != null ? `${temp}°C` : "--";
+                })(),
+                (() => {
+                  const { limite } = parseTemps(a.mensaje || "");
+                  return limite != null ? `${limite}°C` : "--";
+                })(),
+                a.nivel,
+                a.mensaje,
+              ])}
+            />
+          )}
         </Card>
       </section>
 
@@ -307,7 +270,7 @@ export default function Dashboard() {
 
         <Card title="Sugerencias de oferta">
           {alertasOfertaVida.length === 0 ? (
-            <div className="muted">Sin alertas de sobrestock o vida Ãºtil.</div>
+            <div className="muted">Sin alertas de sobrestock o vida útil.</div>
           ) : (
             <Table
               columns={["Producto", "Mensaje", "Nivel", "Tipo"]}
@@ -437,25 +400,25 @@ function Hub() {
   return (
     <div className="hub">
       <button className={btnClass("shop")} onClick={goToPOS}>
-        <span className="tile-emoji">ðŸ§¾</span>
+        <span className="tile-emoji">??</span>
         <span className="tile-title">Punto de venta</span>
         <span className="tile-sub">Cobrar / Registrar ventas</span>
       </button>
 
       <button className={btnClass("inventario")} onClick={() => handleClick("inventario", "/inventario")}>
-        <span className="tile-emoji">ðŸ“¦</span>
+        <span className="tile-emoji">??</span>
         <span className="tile-title">Inventario</span>
         <span className="tile-sub">Productos y stock</span>
       </button>
 
       <button className={btnClass("orders")} onClick={() => handleClick("orders", "/orders")}>
-        <span className="tile-emoji">ðŸ“ˆ</span>
+        <span className="tile-emoji">??</span>
         <span className="tile-title">Ventas</span>
         <span className="tile-sub">Historial de ventas</span>
       </button>
 
       <button className={btnClass("reports")} onClick={() => handleClick("reports", "/reports")}>
-        <span className="tile-emoji">ðŸ“„</span>
+        <span className="tile-emoji">??</span>
         <span className="tile-title">Informes</span>
         <span className="tile-sub">Informes de ventas</span>
       </button>
@@ -476,3 +439,5 @@ function shortCLP(n) {
   const k = Math.round(n / 1000);
   return `$${k}k`;
 }
+
+

@@ -706,6 +706,32 @@
 .chip.ghost:hover {
   background: rgba(248, 113, 113, 0.12);
 }
+.type-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.type-toggle .btn-group {
+  display: flex;
+  gap: 8px;
+  padding: 4px;
+  border: 1px solid #d9e2ec;
+  border-radius: 999px;
+  background: #f8fafc;
+}
+.type-toggle .chip.active {
+  background: #065f46;
+  color: #fff;
+  border-color: var(--accent);
+}
+.type-toggle .chip {
+  min-width: 78px;
+  text-align: center;
+  background: transparent;
+  color: #0f172a;
+  border-color: #d9e2ec;
+}
 
 /* CARD FOOTER */
 
@@ -992,6 +1018,26 @@
   .inv-board {
     grid-auto-columns: minmax(220px, 80%);
   }
+
+  .inventory-page .prod-card {
+    flex-direction: column;
+  }
+  .inventory-page .pc-main {
+    flex-direction: column;
+  }
+  .inventory-page .pc-info {
+    width: 100%;
+  }
+  .inventory-page .care-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .product-alert-badges {
+    flex-wrap: wrap;
+  }
+  .alerts-panel .alerts-grid {
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  }
 }
 
 @media (max-width: 600px) {
@@ -1005,5 +1051,24 @@
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .inventory-controls {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+  .inventory-controls input.search {
+    width: 100%;
+  }
+  .stock-ops {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .inv-board {
+    grid-template-columns: 1fr;
+  }
+  .product-alert-badges .badge {
+    margin-bottom: 4px;
   }
 }

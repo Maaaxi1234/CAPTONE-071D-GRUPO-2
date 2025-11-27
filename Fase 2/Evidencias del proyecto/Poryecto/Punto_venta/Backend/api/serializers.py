@@ -32,6 +32,11 @@ _product_fields = [
     "frecuencia_riego_dias",
     "vida_util_dias",
     "sensibilidad_climatica",
+    "sensibilidad_calor",
+    "sensibilidad_frio",
+    "temp_max_segura",
+    "temp_min_segura",
+    "requiere_alerta_calor",
     "fecha_ingreso",
     "ultima_fecha_riego",
 ]

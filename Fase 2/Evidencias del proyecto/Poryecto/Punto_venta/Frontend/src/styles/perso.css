@@ -163,3 +163,16 @@
   padding-left: 20px;
   white-space: nowrap;
 }
+
+@media (max-width: 720px) {
+  .reports-perso {
+    padding: 12px;
+    padding-bottom: 24px;
+  }
+  .reports-perso .table-wrap {
+    overflow-x: auto;
+  }
+  .reports-perso .report-table {
+    min-width: 640px;
+  }
+}

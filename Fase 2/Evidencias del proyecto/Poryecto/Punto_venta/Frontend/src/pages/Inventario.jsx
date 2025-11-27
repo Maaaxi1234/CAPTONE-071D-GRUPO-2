@@ -11,6 +11,8 @@ const ALERT_TYPE_LABELS = {
   VIDA_UTIL: "Vida util excedida",
   SOBRESTOCK: "Sobrestock",
   RIESGO_ALTO: "Riesgo climatico alto",
+  CALOR: "Temperatura alta",
+  FRIO: "Temperatura baja",
 };
 const ALERT_LEVEL_LABELS = {
   INFO: "Informacion",
@@ -22,6 +24,7 @@ const ALERT_LEVEL_COLORS = {
   ADVERTENCIA: "#f97316",
   CRITICO: "#dc2626",
 };
+const ALERT_REFRESH_MS = 3_600_000;
 
 export default function Inventario() {
   const [loading, setLoading] = useState(true);
@@ -42,8 +45,9 @@ export default function Inventario() {
   const [file, setFile] = useState(null);
   const [preview, setPreview] = useState("");
 
-  function blankForm() {
+function blankForm() {
     return {
+      isPlant: false,
       manualId: "",
       name: "",
       price: "",
@@ -58,6 +62,11 @@ export default function Inventario() {
       frecuencia_riego_dias: DEFAULT_RIEGO_DIAS,
       vida_util_dias: DEFAULT_VIDA_UTIL_DIAS,
       sensibilidad_climatica: "",
+      sensibilidad_calor: "",
+      sensibilidad_frio: "",
+      temp_max_segura: "",
+      temp_min_segura: "",
+      requiere_alerta_calor: false,
       fecha_ingreso: "",
       ultima_fecha_riego: "",
     };
@@ -87,6 +96,11 @@ export default function Inventario() {
 
   useEffect(() => {
     fetchAlerts();
+  }, [fetchAlerts]);
+
+  useEffect(() => {
+    const id = setInterval(() => fetchAlerts(), ALERT_REFRESH_MS);
+    return () => clearInterval(id);
   }, [fetchAlerts]);
 
   const alertsByProduct = useMemo(() => {
@@ -136,8 +150,15 @@ export default function Inventario() {
   }
 
   function openEdit(p) {
+    const detectedPlant = Boolean(
+      (p.frecuencia_riego_dias ?? "") !== "" ||
+      (p.vida_util_dias ?? "") !== "" ||
+      (p.sensibilidad_climatica ?? "") !== "" ||
+      p.ultima_fecha_riego
+    );
     setEditing(p);
     setForm({
+      isPlant: detectedPlant,
       manualId: "",
       name: p.name || "",
       price: p.price ?? "",
@@ -152,6 +173,11 @@ export default function Inventario() {
       frecuencia_riego_dias: p.frecuencia_riego_dias ?? "",
       vida_util_dias: p.vida_util_dias ?? "",
       sensibilidad_climatica: p.sensibilidad_climatica ?? "",
+      sensibilidad_calor: p.sensibilidad_calor ?? "",
+      sensibilidad_frio: p.sensibilidad_frio ?? "",
+      temp_max_segura: p.temp_max_segura ?? "",
+      temp_min_segura: p.temp_min_segura ?? "",
+      requiere_alerta_calor: Boolean(p.requiere_alerta_calor),
       fecha_ingreso: p.fecha_ingreso ? p.fecha_ingreso.slice(0, 10) : "",
       ultima_fecha_riego: p.ultima_fecha_riego || "",
     });
@@ -188,15 +214,28 @@ export default function Inventario() {
     fd.append("category_id", String(f.category_id));
     fd.append("discount_pct", String(Math.min(40, Math.max(0, Number(f.discount_pct || 0)))));
     if (file) fd.append("image", file);
-    if (f.frecuencia_riego_dias !== "" && f.frecuencia_riego_dias !== null) {
+    if (f.isPlant && f.frecuencia_riego_dias !== "" && f.frecuencia_riego_dias !== null) {
       fd.append("frecuencia_riego_dias", String(f.frecuencia_riego_dias));
     }
     if (f.vida_util_dias !== "" && f.vida_util_dias !== null) {
       fd.append("vida_util_dias", String(f.vida_util_dias));
     }
-    if ((f.sensibilidad_climatica || "").trim()) {
+    if (f.isPlant && (f.sensibilidad_climatica || "").trim()) {
       fd.append("sensibilidad_climatica", f.sensibilidad_climatica.trim());
     }
+    if (f.isPlant && (f.sensibilidad_calor || "").trim()) {
+      fd.append("sensibilidad_calor", f.sensibilidad_calor.trim());
+    }
+    if (f.isPlant && (f.sensibilidad_frio || "").trim()) {
+      fd.append("sensibilidad_frio", f.sensibilidad_frio.trim());
+    }
+    if (f.isPlant && f.temp_max_segura !== "" && f.temp_max_segura !== null) {
+      fd.append("temp_max_segura", String(f.temp_max_segura));
+    }
+    if (f.isPlant && f.temp_min_segura !== "" && f.temp_min_segura !== null) {
+      fd.append("temp_min_segura", String(f.temp_min_segura));
+    }
+    fd.append("requiere_alerta_calor", f.isPlant && f.requiere_alerta_calor ? "true" : "false");
     if ((f.fecha_ingreso || "").trim()) {
       fd.append("fecha_ingreso", `${f.fecha_ingreso}T00:00:00`);
     }
@@ -289,10 +328,9 @@ export default function Inventario() {
   async function extenderVida(p) {
     if (!confirm("Extender vida util para este producto?")) return;
     try {
-      await api.post(`/api/products/${p.id}/extender-vida/`, {});
-      const nowIso = new Date().toISOString();
+      const { data } = await api.post(`/api/products/${p.id}/extender-vida/`, {});
       setProducts((prev) =>
-        prev.map((x) => (x.id === p.id ? { ...x, fecha_ingreso: nowIso } : x))
+        prev.map((x) => (x.id === p.id ? { ...x, ...data } : x))
       );
       fetchAlerts();
     } catch (e) {
@@ -401,6 +439,11 @@ export default function Inventario() {
                   const vidaUtil = p.vida_util_dias ?? DEFAULT_VIDA_UTIL_DIAS;
                   const sensibilidad = p.sensibilidad_climatica || "Sin dato";
                   const productAlerts = alertsByProduct.get(p.id) || [];
+                  const isPlant = Boolean(
+                    (p.frecuencia_riego_dias ?? "") !== "" ||
+                    (p.sensibilidad_climatica ?? "") !== "" ||
+                    p.ultima_fecha_riego
+                  );
                   return (
                     <article key={p.id} className="prod-card">
                       <header className="pc-head">
@@ -427,14 +470,22 @@ export default function Inventario() {
                             <button className="chip" onClick={() => adjStock(p, +5)}>+5</button>
                             <button className="chip ghost" onClick={() => adjStock(p, -1)}>-1</button>
                           </div>
-                          <div className="care-info">
-                            <div>Riego cada <strong>{frecuencia}</strong> dias</div>
-                            <div>Ultimo riego: {formatDate(p.ultima_fecha_riego)}</div>
-                            <div>Vida util comercial: {vidaUtil} dias</div>
-                            <div>Sensibilidad: {sensibilidad}</div>
-                            <div>Ingreso: {formatDate(p.fecha_ingreso)}</div>
-                          </div>
-                          {productAlerts.length > 0 && (
+                          {isPlant && (
+                            <div className="care-info">
+                              <div>Riego cada <strong>{frecuencia}</strong> dias</div>
+                              <div>Ultimo riego: {formatDate(p.ultima_fecha_riego)}</div>
+                              <div>Vida util comercial: {vidaUtil} dias</div>
+                              <div>Sensibilidad: {sensibilidad}</div>
+                              <div>Ingreso: {formatDate(p.fecha_ingreso)}</div>
+                            </div>
+                          )}
+                          {!isPlant && (
+                            <div className="care-info">
+                              <div>Vida util comercial: {vidaUtil} dias</div>
+                              <div>Ingreso: {formatDate(p.fecha_ingreso)}</div>
+                            </div>
+                          )}
+                          {isPlant && productAlerts.length > 0 && (
                             <div className="product-alert-badges">
                               {productAlerts.map((alerta) => {
                                 const tipoLabel = ALERT_TYPE_LABELS[alerta.tipo] || alerta.tipo;
@@ -455,14 +506,16 @@ export default function Inventario() {
                         </div>
                       </div>
 
-                      <div className="care-actions">
-                        <button className="btn mini care-water" onClick={() => marcarRiego(p)}>
-                          Marcar riego
-                        </button>
-                        <button className="btn mini ghost" onClick={() => extenderVida(p)}>
-                          Extender vida util
-                        </button>
-                      </div>
+                      {isPlant && (
+                        <div className="care-actions">
+                          <button className="btn mini care-water" onClick={() => marcarRiego(p)}>
+                            Marcar riego
+                          </button>
+                          <button className="btn mini ghost" onClick={() => extenderVida(p)}>
+                            Extender vida util
+                          </button>
+                        </div>
+                      )}
 
                       <footer className="pc-actions">
                         <button className="btn" onClick={() => openEdit(p)}>Editar</button>
@@ -486,6 +539,41 @@ export default function Inventario() {
             </div>
 
             <div className="modal-body">
+              <div className="type-toggle">
+                <span>Tipo de producto:</span>
+                <div className="btn-group">
+                  <button
+                    type="button"
+                    className={`chip ${form.isPlant ? "active" : ""}`}
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        isPlant: true,
+                        frecuencia_riego_dias: f.frecuencia_riego_dias || DEFAULT_RIEGO_DIAS,
+                        vida_util_dias: f.vida_util_dias || DEFAULT_VIDA_UTIL_DIAS,
+                      }))
+                    }
+                  >
+                    Planta
+                  </button>
+                  <button
+                    type="button"
+                    className={`chip ${!form.isPlant ? "active" : ""}`}
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        isPlant: false,
+                        frecuencia_riego_dias: "",
+                        sensibilidad_climatica: "",
+                        ultima_fecha_riego: "",
+                      }))
+                    }
+                  >
+                    Otro
+                  </button>
+                </div>
+              </div>
+
               <div className="form-grid">
                 <label>
                   <span>Producto</span>
@@ -610,16 +698,18 @@ export default function Inventario() {
                   />
                 </label>
 
-                <label>
-                  <span>Frecuencia de riego (dias)</span>
-                  <input
-                    className="inp right"
-                    type="number"
-                    min="0"
-                    value={form.frecuencia_riego_dias}
-                    onChange={(e) => setForm({ ...form, frecuencia_riego_dias: e.target.value })}
-                  />
-                </label>
+                {form.isPlant && (
+                  <label>
+                    <span>Frecuencia de riego (dias)</span>
+                    <input
+                      className="inp right"
+                      type="number"
+                      min="0"
+                      value={form.frecuencia_riego_dias}
+                      onChange={(e) => setForm({ ...form, frecuencia_riego_dias: e.target.value })}
+                    />
+                  </label>
+                )}
 
                 <label>
                   <span>Vida util comercial (dias)</span>
@@ -632,19 +722,84 @@ export default function Inventario() {
                   />
                 </label>
 
-                <label>
-                  <span>Sensibilidad climatica</span>
-                  <select
-                    className="inp"
-                    value={form.sensibilidad_climatica}
-                    onChange={(e) => setForm({ ...form, sensibilidad_climatica: e.target.value })}
-                  >
-                    <option value="">- Selecciona -</option>
-                    <option value="BAJA">Baja</option>
-                    <option value="MEDIA">Media</option>
-                    <option value="ALTA">Alta</option>
-                  </select>
-                </label>
+                {form.isPlant && (
+                  <label>
+                    <span>Sensibilidad climatica</span>
+                    <select
+                      className="inp"
+                      value={form.sensibilidad_climatica}
+                      onChange={(e) => setForm({ ...form, sensibilidad_climatica: e.target.value })}
+                    >
+                      <option value="">- Selecciona -</option>
+                      <option value="BAJA">Baja</option>
+                      <option value="MEDIA">Media</option>
+                      <option value="ALTA">Alta</option>
+                    </select>
+                  </label>
+                )}
+
+                {form.isPlant && (
+                  <>
+                    <label>
+                      <span>Sensibilidad al calor</span>
+                      <select
+                        className="inp"
+                        value={form.sensibilidad_calor}
+                        onChange={(e) => setForm({ ...form, sensibilidad_calor: e.target.value })}
+                      >
+                        <option value="">- Selecciona -</option>
+                        <option value="BAJA">Baja</option>
+                        <option value="MEDIA">Media</option>
+                        <option value="ALTA">Alta</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      <span>Sensibilidad al frío</span>
+                      <select
+                        className="inp"
+                        value={form.sensibilidad_frio}
+                        onChange={(e) => setForm({ ...form, sensibilidad_frio: e.target.value })}
+                      >
+                        <option value="">- Selecciona -</option>
+                        <option value="BAJA">Baja</option>
+                        <option value="MEDIA">Media</option>
+                        <option value="ALTA">Alta</option>
+                      </select>
+                    </label>
+
+                    <label>
+                      <span>Temperatura máxima segura (°C)</span>
+                      <input
+                        className="inp right"
+                        type="number"
+                        step="0.1"
+                        value={form.temp_max_segura}
+                        onChange={(e) => setForm({ ...form, temp_max_segura: e.target.value })}
+                      />
+                    </label>
+
+                    <label>
+                      <span>Temperatura mínima segura (°C)</span>
+                      <input
+                        className="inp right"
+                        type="number"
+                        step="0.1"
+                        value={form.temp_min_segura}
+                        onChange={(e) => setForm({ ...form, temp_min_segura: e.target.value })}
+                      />
+                    </label>
+
+                    <label className="checkbox-card">
+                      <input
+                        type="checkbox"
+                        checked={form.requiere_alerta_calor}
+                        onChange={(e) => setForm({ ...form, requiere_alerta_calor: e.target.checked })}
+                      />
+                      <span>Activar alertas de temperatura</span>
+                    </label>
+                  </>
+                )}
 
                 <label>
                   <span>Fecha de ingreso</span>
@@ -656,7 +811,7 @@ export default function Inventario() {
                   />
                 </label>
 
-                {editing && (
+                {editing && form.isPlant && (
                   <label>
                     <span>Ultimo riego</span>
                     <input className="inp" value={formatDate(form.ultima_fecha_riego)} readOnly />

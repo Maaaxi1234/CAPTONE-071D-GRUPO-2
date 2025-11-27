@@ -2,12 +2,15 @@
 from django.conf import settings
 from django.core.mail import send_mail
 from django.utils import timezone
+import requests
 
 from .models import Alert, Product
 
 DEFAULT_RIEGO_DIAS = 3
 DEFAULT_VIDA_UTIL_DIAS = 30
 DEFAULT_SOBRESTOCK_DIAS = 20
+WEATHER_URL = "https://api.open-meteo.com/v1/forecast?latitude=-33.45&longitude=-70.66&current=temperature_2m"
+_weather_cache = {"temp": None, "ts": None}
 
 
 def _resolver_alertas(producto: Product, tipo: str):
@@ -24,6 +27,26 @@ def _crear_alerta(producto: Product, tipo: str, mensaje: str, nivel: str = "ADVE
     return Alert.objects.create(producto=producto, tipo=tipo, mensaje=mensaje, nivel=nivel)
 
 
+def _get_temp_actual():
+    """Obtiene la temperatura actual usando Open-Meteo con caché simple."""
+    global _weather_cache
+    now = timezone.now()
+    ts = _weather_cache.get("ts")
+    if ts and (now - ts).total_seconds() < 300 and _weather_cache.get("temp") is not None:
+        return _weather_cache["temp"]
+    try:
+        resp = requests.get(WEATHER_URL, timeout=5)
+        resp.raise_for_status()
+        data = resp.json()
+        temp = data.get("current", {}).get("temperature_2m")
+        if temp is not None:
+            _weather_cache = {"temp": float(temp), "ts": now}
+            return float(temp)
+    except Exception:
+        return None
+    return None
+
+
 def evaluar_alertas_producto(producto: Product):
     """
     Evalúa un producto y genera/actualiza alertas en base a los umbrales definidos.
@@ -32,6 +55,15 @@ def evaluar_alertas_producto(producto: Product):
     created = []
     now = timezone.now()
     fecha_ingreso = producto.fecha_ingreso or now
+
+    # Si se ha extendido la vida útil, usar esa fecha como base para vida útil y sobrestock
+    fecha_extension = (
+        producto.cuidados.filter(tipo_accion="EXTENDER_VIDA")
+        .order_by("-fecha_accion")
+        .values_list("fecha_accion", flat=True)
+        .first()
+    )
+    fecha_base_vida = fecha_extension or fecha_ingreso
 
     # --- Riego ---
     frecuencia = producto.frecuencia_riego_dias or DEFAULT_RIEGO_DIAS
@@ -51,7 +83,7 @@ def evaluar_alertas_producto(producto: Product):
 
     # --- Vida útil ---
     vida_util = producto.vida_util_dias or DEFAULT_VIDA_UTIL_DIAS
-    if (now - fecha_ingreso).days > vida_util:
+    if (now - fecha_base_vida).days > vida_util:
         alerta = _crear_alerta(
             producto,
             "VIDA_UTIL",
@@ -64,7 +96,7 @@ def evaluar_alertas_producto(producto: Product):
         _resolver_alertas(producto, "VIDA_UTIL")
 
     # --- Sobrestock / sin rotación ---
-    if (now - fecha_ingreso).days > DEFAULT_SOBRESTOCK_DIAS:
+    if (now - fecha_base_vida).days > DEFAULT_SOBRESTOCK_DIAS:
         alerta = _crear_alerta(
             producto,
             "SOBRESTOCK",
@@ -81,7 +113,7 @@ def evaluar_alertas_producto(producto: Product):
         riesgo = False
         if producto.ultima_fecha_riego:
             riesgo |= (now - (producto.ultima_fecha_riego)).days > (producto.frecuencia_riego_dias or DEFAULT_RIEGO_DIAS)
-        if (now - fecha_ingreso).days > vida_util:
+        if (now - fecha_base_vida).days > vida_util:
             riesgo = True
         if riesgo:
             alerta = _crear_alerta(
@@ -97,7 +129,62 @@ def evaluar_alertas_producto(producto: Product):
     else:
         _resolver_alertas(producto, "RIESGO_ALTO")
 
+    # --- Alertas de temperatura (calor/frío) ---
+    if getattr(producto, "requiere_alerta_calor", False):
+        temp_actual = _get_temp_actual()
+        if temp_actual is not None:
+            # Calor
+            if producto.temp_max_segura is not None:
+                delta = temp_actual - float(producto.temp_max_segura)
+                if delta >= 0:
+                    nivel = "ADVERTENCIA" if delta <= 2 else "CRITICO"
+                    alerta = _crear_alerta(
+                        producto,
+                        "CALOR",
+                        f"La temperatura actual ({temp_actual:.1f}°C) supera el límite seguro ({producto.temp_max_segura}°C).",
+                        nivel=nivel,
+                    )
+                    if alerta:
+                        created.append(alerta)
+                else:
+                    _resolver_alertas(producto, "CALOR")
+            else:
+                _resolver_alertas(producto, "CALOR")
+
+            # Frío
+            if producto.temp_min_segura is not None:
+                delta_f = float(producto.temp_min_segura) - temp_actual
+                if delta_f >= 0:
+                    nivel = "ADVERTENCIA" if delta_f <= 2 else "CRITICO"
+                    alerta = _crear_alerta(
+                        producto,
+                        "FRIO",
+                        f"La temperatura actual ({temp_actual:.1f}°C) está por debajo del mínimo seguro ({producto.temp_min_segura}°C).",
+                        nivel=nivel,
+                    )
+                    if alerta:
+                        created.append(alerta)
+                else:
+                    _resolver_alertas(producto, "FRIO")
+            else:
+                _resolver_alertas(producto, "FRIO")
+        # Si no se pudo obtener temperatura, no generamos ni resolvemos.
+    else:
+        _resolver_alertas(producto, "CALOR")
+        _resolver_alertas(producto, "FRIO")
+
     return created
+
+
+def evaluar_alertas_pendientes():
+    """
+    Recorre todos los productos y recalcula alertas basadas en fechas/umbrales.
+    Útil para invocar al listar alertas o desde tareas programadas.
+    """
+    total = 0
+    for producto in Product.objects.all():
+        total += len(evaluar_alertas_producto(producto))
+    return total
 
 
 def enviar_alertas_pendientes_por_correo():
@@ -185,3 +272,4 @@ def enviar_alertas_pendientes_por_correo():
             html_message=html_body,
         )
     return pendientes.count()
+
