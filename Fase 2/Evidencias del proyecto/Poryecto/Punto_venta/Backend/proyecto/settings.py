@@ -28,6 +28,9 @@ INSTALLED_APPS = [
     "rest_framework",
     "corsheaders",
     "api",
+    "pos",
+    "inventario",
+    "informes",
 ]
 
 MIDDLEWARE = [
