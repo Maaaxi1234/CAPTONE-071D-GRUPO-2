@@ -1,7 +1,7 @@
 // src/pages/ReportesPersonalizados.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { reportQuery, reportExport } from "../services/kpi";
+import { reportQuery, reportExport } from "../../../services/kpi";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";

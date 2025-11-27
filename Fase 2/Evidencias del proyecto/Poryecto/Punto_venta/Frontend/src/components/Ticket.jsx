@@ -1,6 +1,6 @@
 // src/components/Ticket.jsx
 import React, { useEffect } from "react";
-import "../styles/ticket.css";
+import "../modules/pos/styles/ticket.css";
 
 export default function Ticket({ order = {}, autoPrint = false }) {
   // === Utils ===

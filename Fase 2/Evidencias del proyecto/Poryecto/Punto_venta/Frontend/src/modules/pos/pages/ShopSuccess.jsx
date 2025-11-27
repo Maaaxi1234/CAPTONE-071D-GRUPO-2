@@ -1,9 +1,9 @@
 // src/pages/ShopSuccess.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api from "../../../services/api";
 import "../styles/shop.css";
-import Ticket from "../components/Ticket";
+import Ticket from "../../../components/Ticket";
 
 const TZ = "America/Santiago";
 const todayKey = () =>

@@ -11,7 +11,7 @@ import {
   kpiPromedioDiario,
   kpiExportExcel, 
   kpiExportPDF,
-} from "../services/kpi";
+} from "../../../services/kpi";
 
 import {
   ResponsiveContainer,

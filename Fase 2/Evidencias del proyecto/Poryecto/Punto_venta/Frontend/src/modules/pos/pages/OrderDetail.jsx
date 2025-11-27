@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import api from "../services/api";
+import api from "../../../services/api";
 
 const PAYMENT_LABELS = {
   efectivo: "Efectivo",

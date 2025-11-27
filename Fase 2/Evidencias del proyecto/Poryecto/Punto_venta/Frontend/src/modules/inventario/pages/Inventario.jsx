@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import api, { API_BASE } from "../services/api";
+import api, { API_BASE } from "../../../services/api";
 import "../styles/inventory.css";
 
 

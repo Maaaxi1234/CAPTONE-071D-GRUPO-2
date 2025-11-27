@@ -1,11 +1,11 @@
 // src/pages/Shop.jsx
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api, { API_BASE } from "../services/api";
+import api, { API_BASE } from "../../../services/api";
 import "../styles/shop.css";
 
 // Modal de cierre de caja (arqueo)
-import CloseCashModal from "../components/CloseCashModal";
+import CloseCashModal from "../../../components/CloseCashModal";
 
 function catIcon(name = "") {
   const n = name.toLowerCase();

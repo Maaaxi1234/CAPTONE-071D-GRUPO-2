@@ -4,16 +4,20 @@ import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import ProtectedRoute from "./routes/ProtectedRoute";
 
-import CashOpen from "./pages/CashOpen";
+// POS
+import CashOpen from "./modules/pos/pages/CashOpen";
+import Shop from "./modules/pos/pages/Shop";
+import ShopSuccess from "./modules/pos/pages/ShopSuccess";
+import Orders from "./modules/pos/pages/Orders";
+import OrderDetail from "./modules/pos/pages/OrderDetail";
+// Inventario
+import Inventario from "./modules/inventario/pages/Inventario";
+// Informes
+import Dashboard from "./modules/informes/pages/Dashboard";
+import Reports from "./modules/informes/pages/Reports";
+import ReportesPersonalizados from "./modules/informes/pages/ReportesPersonalizados";
+// Auth
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Shop from "./pages/Shop";
-import ShopSuccess from "./pages/ShopSuccess";
-import Orders from "./pages/Orders";
-import OrderDetail from "./pages/OrderDetail";
-import Inventario from "./pages/Inventario";
-import Reports from "./pages/Reports";
-import ReportesPersonalizados from "./pages/ReportesPersonalizados";
 // --- RoleGate: permite el paso solo si el rol del usuario está dentro de "allow"
 function getStoredRole() {
   return (
