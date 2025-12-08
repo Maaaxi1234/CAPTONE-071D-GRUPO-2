@@ -518,7 +518,7 @@ function blankForm() {
                       )}
 
                       <footer className="pc-actions">
-                        <button className="btn" onClick={() => openEdit(p)}>Editar</button>
+                        <button className="btn edit" onClick={() => openEdit(p)}>Editar</button>
                         <button className="btn danger" onClick={() => remove(p.id)}>Eliminar</button>
                       </footer>
                     </article>

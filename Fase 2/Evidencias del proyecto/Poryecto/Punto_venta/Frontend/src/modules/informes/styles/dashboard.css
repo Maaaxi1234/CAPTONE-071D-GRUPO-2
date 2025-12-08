@@ -325,6 +325,15 @@
 .page-plantitas .tr:nth-child(even) .td {background:var(--bg)} /* filas alternadas */
 .page-plantitas .tr:hover .td {background:var(--primary-light);color:#fff}
 .page-plantitas .climate-grid .table {max-width:100%; margin:0;}
+.dashboard-page .card-scroll {
+  max-height: 320px;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+.dashboard-page .card-scroll .table {
+  max-width: 100%;
+  margin: 0;
+}
 @media (max-width: 1200px) {
   .page-plantitas { padding: 14px; }
   .page-plantitas .main-grid { grid-template-columns: 1fr 1fr; }

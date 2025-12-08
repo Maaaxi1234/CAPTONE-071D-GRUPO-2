@@ -384,6 +384,59 @@
   font-size: 0.75rem;
 }
 
+/* Edit button: smaller green pill, static (no hover/transform) */
+.pc-actions .btn.edit {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: #ffffff;
+  border-radius: 999px;
+  padding: 6px 12px;        /* más pequeño */
+  font-size: 0.9rem;       /* ligeramente más pequeño */
+  border: 1px solid rgba(0,0,0,0.06);
+  box-shadow: none;
+  transform: none !important;
+  transition: none !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Mantener edit sin efectos en hover/active/focus */
+.pc-actions .btn.edit:hover,
+.pc-actions .btn.edit:active,
+.pc-actions .btn.edit:focus {
+  box-shadow: none !important;
+  transform: none !important;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark)) !important;
+  outline: none !important;
+}
+
+/* Delete button: smaller red pill and NO hover/active effects */
+.pc-actions .btn.danger {
+  padding: 6px 12px;       /* más pequeño */
+  font-size: 0.9rem;
+  border-radius: 999px;
+  font-weight: 700;
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--error);
+  border-color: #b91c1c;
+  color: #fff;
+  box-shadow: none;        /* quitar sombra por defecto */
+  transition: none !important; /* sin transiciones */
+}
+
+/* Anular cualquier hover/active/focus en eliminar */
+.pc-actions .btn.danger:hover,
+.pc-actions .btn.danger:active,
+.pc-actions .btn.danger:focus {
+  background: var(--error) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  outline: none !important;
+}
+
 /* BOARD / COLUMNS */
 
 .inv-board {
@@ -743,28 +796,20 @@
 }
 
 .pc-actions .btn {
-  padding: 8px 14px;
-  border-radius: 12px;
-  border-color: rgba(15, 122, 76, 0.35);
-  background: rgba(15, 122, 76, 0.06);
-  color: var(--primary-dark);
-  font-weight: 600;
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid #0c6b41;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+  transform: none;
+  transition: background 0.12s ease, box-shadow 0.12s ease;
 }
 
 .pc-actions .btn:hover {
-  background: rgba(15, 122, 76, 0.12);
-}
-
-.pc-actions .btn.danger {
-  background: rgba(220, 38, 38, 0.08);
-  border-color: rgba(220, 38, 38, 0.5);
-  color: #b91c1c;
-  box-shadow: 0 8px 16px rgba(220, 38, 38, 0.18);
-}
-
-.pc-actions .btn.danger:hover {
-  background: rgba(220, 38, 38, 0.14);
+  background: var(--primary);
+  transform: none;
 }
 
 /* MODAL */

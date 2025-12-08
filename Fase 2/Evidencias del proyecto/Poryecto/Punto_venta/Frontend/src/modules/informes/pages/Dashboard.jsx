@@ -184,7 +184,7 @@ export default function Dashboard() {
 
       {/* KPIs */}
       <section className="grid kpis">
-        <Kpi title="Ventas de hoy" value={formatCLP(stats.ventasHoy)} hint="INGRESO BRUTO" />
+        <Kpi title="Ventas de hoy" value={formatCLP(stats.ventasHoy)} hint="INGRESO " />
         <Kpi title="Tickets" value={stats.ticketsHoy} hint="TRANSACCIONES" />
         <Kpi title="Ticket promedio" value={formatCLP(stats.ticketPromedio)} hint="POR TICKET" />
         <Kpi title="Stock bajo" value={stats.lowStockCount} hint="PRODUCTOS" warn />
@@ -202,11 +202,13 @@ export default function Dashboard() {
           {alertasRiego.length === 0 ? (
             <div className="muted">Sin alertas de riego.</div>
           ) : (
-            <Table
-              columns={["Producto", "Mensaje", "Nivel"]}
-              headerClasses={["", "", "th-alert"]}
-              rows={alertasRiego.map((a) => [a.producto?.name || "-", a.mensaje, a.nivel])}
-            />
+            <div className="card-scroll">
+              <Table
+                columns={["Producto", "Mensaje", "Nivel"]}
+                headerClasses={["", "", "th-alert"]}
+                rows={alertasRiego.map((a) => [a.producto?.name || "-", a.mensaje, a.nivel])}
+              />
+            </div>
           )}
         </Card>
       </section>
