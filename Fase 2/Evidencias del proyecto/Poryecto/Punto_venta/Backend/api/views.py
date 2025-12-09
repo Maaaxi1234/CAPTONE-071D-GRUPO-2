@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 # ---- Vistas propias de api ----
+# Retorna información básica del usuario autenticado (id, username, grupos, role).
 class MeView(APIView):
     permission_classes = [IsAuthenticated]
 

@@ -5,17 +5,20 @@ import os, uuid
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db.models import Q, CheckConstraint
 
+# Categoría simple.
 class Category(models.Model):
     name = models.CharField(max_length=80, unique=True)
 
     def __str__(self):
         return self.name
 
+# Path para almacenar imágenes de productos.
 def product_image_path(instance, filename):
     ext = filename.split(".")[-1]
     new_name = f"{uuid.uuid4().hex}.{ext}"
     return os.path.join("products", new_name)
 
+# Producto: información, precios, stock y parámetros de riego.
 class Product(models.Model):
     SENSIBILIDAD_CHOICES = [
         ("BAJA", "Baja"),
@@ -49,6 +52,7 @@ class Product(models.Model):
     def __str__(self):
         return f"{self.name} ({self.sku})"
 
+    # Devuelve precio final aplicando descuento.
     def price_with_discount(self):
         pct = max(0, min(90, self.discount_pct or 0))
         if pct <= 0:
@@ -66,6 +70,7 @@ class Product(models.Model):
             models.Index(fields=["category"], name="idx_products_category"),
         ]
 
+# Orden de venta: genera código al crear si no tiene.
 class Order(models.Model):
     PAYMENT_CHOICES = [
         ('efectivo', 'Efectivo'),
@@ -90,6 +95,7 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         creating = self._state.adding
         super().save(*args, **kwargs)
+        # Si es nueva orden y no hay código, crea código con fecha+secuencia.
         if creating and not self.code:
             today = timezone.localdate()
             prefix = f"PDLF-{today.strftime('%Y%m%d')}"
@@ -106,6 +112,7 @@ class Order(models.Model):
             models.Index(fields=["payment_method"], name="idx_orders_pay_method"),
         ]
     
+# Item de orden: snapshot del producto y cantidades/precios.
 class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
 
@@ -131,6 +138,7 @@ class OrderItem(models.Model):
         ]
 
 
+# Alertas generadas para productos (riego, vida útil, etc.).
 class Alert(models.Model):
     TIPO_CHOICES = [
         ("RIEGO", "Riego atrasado"),
@@ -164,6 +172,7 @@ class Alert(models.Model):
         return f"{self.producto} - {self.tipo}"
 
 
+# Registro de cuidados aplicados a planta (riego, poda, etc.).
 class PlantCare(models.Model):
     ACCION_CHOICES = [
         ("RIEGO", "Riego"),

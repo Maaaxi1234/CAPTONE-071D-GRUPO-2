@@ -1,24 +1,29 @@
 """
 Serializers para POS (órdenes), usando modelos en api.models.
 """
+
 from rest_framework import serializers
 from api.models import Order, OrderItem, Product
 
 
+# Serializer simple para entrada de ítem (id producto + cantidad).
 class OrderItemInputSerializer(serializers.Serializer):
     product_id = serializers.CharField()
     quantity = serializers.IntegerField(min_value=1)
 
 
+# Serializer para crear órdenes desde payload: valida y crea la orden con items.
 class OrderCreateSerializer(serializers.Serializer):
     payment_method = serializers.ChoiceField(choices=["efectivo", "debito", "credito", "transferencia"])
     items = OrderItemInputSerializer(many=True)
 
+    # Verifica que haya al menos un item en la orden.
     def validate(self, data):
         if not data.get("items"):
             raise serializers.ValidationError({"items": ["Debe incluir al menos un producto."]})
         return data
 
+    # Crea la orden, ajusta stock y genera OrderItem (dentro de transacción).
     def create(self, validated):
         from django.db import transaction
 
@@ -69,6 +74,7 @@ class OrderCreateSerializer(serializers.Serializer):
         return order
 
 
+# Serializer para representar una orden con sus items (snapshot).
 class OrderSerializer(serializers.ModelSerializer):
     items = serializers.SerializerMethodField()
 
@@ -84,6 +90,7 @@ class OrderSerializer(serializers.ModelSerializer):
             "items",
         ]
 
+    # Construye lista simple de items para la respuesta JSON.
     def get_items(self, obj):
         out = []
         for i in obj.items.all():

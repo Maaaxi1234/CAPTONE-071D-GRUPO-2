@@ -37,6 +37,7 @@ from api.perms import group_perm
 PAID = {"status": "paid"}
 
 
+# Construye queryset de órdenes dentro de rango opcional start/end.
 def _rango_qs(request):
     qs = Order.objects.filter(**PAID)
     start = request.GET.get("start")
@@ -48,6 +49,7 @@ def _rango_qs(request):
     return qs
 
 
+# Vista resumen KPIs: totales, tickets, items, ticket promedio.
 class KPIOverview(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -71,6 +73,7 @@ class KPIOverview(APIView):
         return Response(KPITotalesSerializer(data).data)
 
 
+# Top productos por cantidad vendida.
 class KPITopProductos(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -87,6 +90,7 @@ class KPITopProductos(APIView):
         return Response(KPIValueSerializer(data, many=True).data)
 
 
+# Mes con mayor venta (simple).
 class KPIMesMayorVenta(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -105,6 +109,7 @@ class KPIMesMayorVenta(APIView):
         return Response(KPIValueSerializer(data, many=True).data)
 
 
+# Ventas agregadas por mes para serie temporal.
 class VentasPorMes(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -120,6 +125,7 @@ class VentasPorMes(APIView):
         return Response(SeriesPointSerializer(data, many=True).data)
 
 
+# Ventas por categoría (monto).
 class VentasPorCategoria(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -139,6 +145,7 @@ class VentasPorCategoria(APIView):
         return Response(KPIValueSerializer(data, many=True).data)
 
 
+# Breakdown por medios de pago (conteo y monto).
 class MediosDePago(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -180,6 +187,7 @@ class MediosDePago(APIView):
         return Response(KPIValueSerializer(data, many=True).data)
 
 
+# Promedio de venta diaria calculado sobre días con datos.
 class PromedioVentaDiaria(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -196,6 +204,7 @@ class PromedioVentaDiaria(APIView):
 
 
 # ---------- Helpers reportes ----------
+# Helpers para generar filas de reportes (productos, medios, etc.).
 def _rows_report(report, start, end):
     class DummyReq:
         GET = {}
@@ -286,6 +295,7 @@ def _rows_report(report, start, end):
     return "Detalle de ventas (por ítem)", headers, rows
 
 
+# Exporta a Excel (reportes).
 class ExportExcelView(APIView):
     permission_classes = [group_perm("admin")]
 
@@ -357,6 +367,7 @@ def _on_page(canvas, doc):
     canvas.restoreState()
 
 
+# Export PDF: prepara tabla y estilos, construye PDF.
 class ExportPDFView(APIView):
     permission_classes = [group_perm("admin")]
 
@@ -455,6 +466,7 @@ class ExportPDFView(APIView):
         return resp
 
 
+# Parseo simple de fechas YYYY-MM-DD seguro.
 def _parse_date_yyyy_mm_dd(s):
     if not s:
         return None
@@ -467,6 +479,7 @@ def _parse_date_yyyy_mm_dd(s):
             return None
 
 
+# Consulta dinámica para el constructor de reportes.
 class ReportQueryView(APIView):
     """
     Devuelve datos para el constructor de informes.
@@ -597,6 +610,7 @@ class ReportQueryView(APIView):
             return Response({"detail": f"ReportQuery error: {type(e).__name__}: {e}"}, status=400)
 
 
+# Exporta resultados de ReportQueryView a Excel/PDF.
 class ReportExportView(APIView):
     """
     Exporta los mismos datos que ReportQueryView a Excel/PDF.

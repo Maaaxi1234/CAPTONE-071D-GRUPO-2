@@ -1,12 +1,14 @@
 """
 Serializers para Inventario (categorías, productos, alertas, cuidados).
 """
+
 import uuid
 from rest_framework import serializers
 from api.models import Category, Product, Alert, PlantCare
 from api.alerts import evaluar_alertas_producto
 
 
+# Genera un id corto para productos si no se provee.
 def generate_product_id():
     """ID corto aleatorio (12 hex)."""
     for _ in range(5):
@@ -41,12 +43,14 @@ if hasattr(Product, "barcode"):
     _product_fields.insert(_product_fields.index("image") + 1, "barcode")
 
 
+# Serializa categorías básicas.
 class CategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = ["id", "name"]
 
 
+# Serializa productos; convierte image a URL y dispara evaluación de alertas en create/update.
 class ProductSerializer(serializers.ModelSerializer):
     id = serializers.CharField(required=False)
     category = CategorySerializer(read_only=True)
@@ -61,9 +65,11 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = _product_fields + ["price_discounted"]
         read_only_fields = ["price_discounted"]
 
+    # Devuelve precio with descuento calculado.
     def get_price_discounted(self, obj):
         return obj.price_with_discount()
 
+    # Asegura que ruta de imagen sea absoluta si se tiene request.
     def to_representation(self, instance):
         data = super().to_representation(instance)
         img = data.get("image")
@@ -73,6 +79,7 @@ class ProductSerializer(serializers.ModelSerializer):
                 data["image"] = request.build_absolute_uri(img)
         return data
 
+    # Validaciones simples para campos clave.
     def validate_sku(self, v):
         if v is None or str(v).strip() == "":
             raise serializers.ValidationError("SKU es obligatorio.")
@@ -85,6 +92,7 @@ class ProductSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("El precio no puede ser negativo.")
         return v
 
+    # Si no hay id, genera uno; luego evalúa alertas para el producto creado.
     def create(self, validated_data):
         if not validated_data.get("id"):
             validated_data["id"] = generate_product_id()
@@ -92,12 +100,14 @@ class ProductSerializer(serializers.ModelSerializer):
         evaluar_alertas_producto(instance)
         return instance
 
+    # Al actualizar también re-evalúa alertas.
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
         evaluar_alertas_producto(instance)
         return instance
 
 
+# Serializa alertas relacionadas a un producto.
 class AlertSerializer(serializers.ModelSerializer):
     producto = ProductSerializer(read_only=True)
     producto_id = serializers.PrimaryKeyRelatedField(source="producto", queryset=Product.objects.all(), write_only=True)
@@ -118,6 +128,7 @@ class AlertSerializer(serializers.ModelSerializer):
         read_only_fields = ["fecha_creacion", "fecha_resolucion"]
 
 
+# Serializa acciones de cuidado (registro de riego, poda, etc.).
 class PlantCareSerializer(serializers.ModelSerializer):
     producto = ProductSerializer(read_only=True)
     producto_id = serializers.PrimaryKeyRelatedField(source="producto", queryset=Product.objects.all(), write_only=True)

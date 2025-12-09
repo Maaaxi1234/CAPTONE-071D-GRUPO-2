@@ -24,6 +24,7 @@ from api.perms import group_perm
 from api.alerts import evaluar_alertas_producto, evaluar_alertas_pendientes
 
 
+# Lista y crea categorías; POST protegido por roles.
 class CategoryListCreateView(generics.ListCreateAPIView):
     queryset = Category.objects.order_by("name")
     serializer_class = CategorySerializer
@@ -31,23 +32,27 @@ class CategoryListCreateView(generics.ListCreateAPIView):
     filter_backends = [filters.SearchFilter]
     search_fields = ["name"]
 
+    # POST requiere permisos de admin/bodeguero.
     def get_permissions(self):
         if self.request.method == "POST":
             return [group_perm("admin", "bodeguero")()]
         return super().get_permissions()
 
 
+# Detalle de categoría; edición/eliminación protegida.
 class CategoryDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Category.objects.order_by("name")
     serializer_class = CategorySerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+    # PATCH/PUT/DELETE requieren permisos.
     def get_permissions(self):
         if self.request.method in ("PATCH", "PUT", "DELETE"):
             return [group_perm("admin", "bodeguero")()]
         return super().get_permissions()
 
 
+# Lista y crea productos; subida de imagenes soportada.
 class ProductListCreateView(generics.ListCreateAPIView):
     queryset = Product.objects.select_related("category").order_by("name")
     serializer_class = ProductSerializer
@@ -56,21 +61,25 @@ class ProductListCreateView(generics.ListCreateAPIView):
     search_fields = ["name", "sku"]
     parser_classes = [MultiPartParser, FormParser]
 
+    # POST protegido por roles.
     def get_permissions(self):
         if self.request.method == "POST":
             return [group_perm("admin", "bodeguero")()]
         return super().get_permissions()
 
+    # Asegura contexto.request para construir URLs de imagen.
     def get_serializer_context(self):
         return {"request": self.request}
 
 
+# Detalle/actualiza/elimina producto; maneja ProtectedError al borrar.
 class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Product.objects.select_related("category").order_by("name")
     serializer_class = ProductSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]
     parser_classes = [JSONParser, MultiPartParser, FormParser]
 
+    # PATCH/PUT/DELETE requieren permisos.
     def get_permissions(self):
         if self.request.method in ("PATCH", "PUT", "DELETE"):
             return [group_perm("admin", "bodeguero")()]
@@ -79,6 +88,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_serializer_context(self):
         return {"request": self.request}
 
+    # Si producto tiene ventas, devuelve 409 en intento de eliminar.
     def destroy(self, request, *args, **kwargs):
         try:
             instance = self.get_object()
@@ -88,6 +98,7 @@ class ProductDetailView(generics.RetrieveUpdateDestroyAPIView):
             return Response({"detail": "No se puede eliminar este producto porque tiene ventas asociadas."}, status=409)
 
 
+# Registra un riego y marca alertas de riego como resueltas.
 class ProductWaterView(APIView):
     """Registra un riego y limpia alertas pendientes de ese tipo."""
 
@@ -111,6 +122,7 @@ class ProductWaterView(APIView):
         return Response({"detail": "Riego registrado."}, status=201)
 
 
+# Extiende la "vida útil" del producto y reevalúa alertas.
 class ProductExtendLifeView(APIView):
     """Permite reiniciar la vida útil de un producto tras aplicar acciones correctivas."""
 
@@ -154,6 +166,7 @@ class ProductExtendLifeView(APIView):
         return Response({"detail": "Vida útil reiniciada para este producto."}, status=201)
 
 
+# Lista alertas; antes de responder se evaluan alertas pendientes.
 class AlertListView(generics.ListAPIView):
     queryset = Alert.objects.select_related("producto").order_by("-fecha_creacion")
     serializer_class = AlertSerializer
@@ -173,6 +186,7 @@ class AlertListView(generics.ListAPIView):
         return qs
 
 
+# Lista registros de cuidado (riego, poda, etc.), con filtro por producto.
 class PlantCareListView(generics.ListAPIView):
     serializer_class = PlantCareSerializer
     permission_classes = [group_perm("admin", "bodeguero", "vendedor")]
